@@ -1,0 +1,188 @@
+@{
+    ViewBag.Title = "Despre Noi - CyberShield";
+}
+
+<div class="despre-container">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="section-header text-center">
+            <h1>Despre noi</h1>
+        </div>
+
+        <!-- Cine suntem Section -->
+        <section class="despre-section">
+            <h2>Cine suntem</h2>
+            <p>CyberShield este o companie specializată în securitate cibernetică, cu sediul în Chișinău, Moldova. Suntem dedicați protejării afacerilor în era digitală prin servicii profesionale de securitate cibernetică pentru companiile care doresc să își protejeze datele și reputația în fața amenințărilor moderne.</p>
+        </section>
+
+        <!-- Misiunea Section -->
+        <section class="despre-section">
+            <h2>Misiunea noastră</h2>
+            <p>Misiunea noastră este să oferim soluții complete de securitate adaptate nevoilor specifice ale fiecărui client, ajutând organizațiile să identifice, să evalueze și să reducă riscurile de securitate cibernetică.</p>
+        </section>
+
+        <!-- Servicii Section -->
+        <section class="despre-section">
+            <h2>Serviciile noastre</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <h3>Teste de Penetrare</h3>
+                        <p>Identificăm vulnerabilitățile sistemelor dumneavoastră înainte ca atacatorii să le exploateze, cu rapoarte detaliate și recomandări concrete pentru remediere.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <h3>Audit de Securitate</h3>
+                        <p>Evaluăm complet infrastructura IT, politicile și procedurile de securitate pentru a identifica riscurile și a îmbunătăți postura de securitate a organizației dumneavoastră.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <h3>Consultanță în Securitate</h3>
+                        <p>Experții noștri vă oferă îndrumări personalizate pentru implementarea celor mai bune practici și tehnologii de securitate, adaptate specificului afacerii dumneavoastră.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- De ce să alegeți Section -->
+        <section class="despre-section">
+            <h2>De ce să alegeți CyberShield</h2>
+            <div class="row">
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <h3>Expertiză Certificată</h3>
+                        <p>Echipa noastră este formată din specialiști certificați CISSP, CEH și OSCP cu ani de experiență în domeniul securității cibernetice.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <h3>Abordare Personalizată</h3>
+                        <p>Oferim soluții adaptate nevoilor specifice și dimensiunii afacerii dumneavoastră, asigurând că primiți exact serviciile de care aveți nevoie.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <h3>Răspuns Rapid</h3>
+                        <p>Garantăm un timp de răspuns prompt pentru toate solicitările și intervențiile de urgență, fiind alături de dumneavoastră când aveți cea mai mare nevoie.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <h3>Rezultate Măsurabile</h3>
+                        <p>Furnizăm rapoarte detaliate cu metrici clare și planuri de remediere acționabile, astfel încât să puteți vedea progresul și valoarea serviciilor noastre.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Principiile Noastre Section -->
+        <section class="despre-section">
+            <h2>Principiile Noastre</h2>
+            <div class="principles-grid">
+                <div class="principle-card">
+                    <h3>Integritate</h3>
+                    <p>Acționăm cu onestitate și transparență în toate interacțiunile noastre, punând întotdeauna interesele clienților pe primul loc.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>Excelență</h3>
+                    <p>Ne străduim constant să oferim cele mai înalte standarde de calitate în serviciile noastre și să ne depășim limitele.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>Inovație</h3>
+                    <p>Rămânem la curent cu cele mai noi tehnologii și amenințări, adaptându-ne constant pentru a oferi soluții moderne și eficiente.</p>
+                </div>
+                <div class="principle-card">
+                    <h3>Confidențialitate</h3>
+                    <p>Protejăm cu strictețe informațiile clienților noștri, respectând cele mai înalte standarde de securitate și confidențialitate.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .despre-container {
+            padding: 4rem 0;
+            background-color: var(--light-color);
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-header h1 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--dark-color);
+        }
+
+        .despre-section {
+            margin-bottom: 4rem;
+        }
+
+        .despre-section h2 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .despre-section p {
+            font-family: 'Lato', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--dark-color);
+        }
+
+        .service-card, .feature-card, .principle-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover, .feature-card:hover, .principle-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-card h3, .feature-card h3, .principle-card h3 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+        }
+
+        .service-card p, .feature-card p, .principle-card p {
+            font-family: 'Lato', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--dark-color);
+            margin-bottom: 0;
+        }
+
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @@media (max-width: 768px) {
+            .despre-section {
+                margin-bottom: 3rem;
+            }
+
+            .service-card, .feature-card, .principle-card {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+}

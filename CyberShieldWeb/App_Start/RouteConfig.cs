@@ -13,6 +13,14 @@ namespace CyberShieldWeb
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Ruta specifică pentru pagina principală
+            routes.MapRoute(
+                name: "Home",
+                url: "",
+                defaults: new { controller = "Home", action = "Index" }
+            );
+
+            // Ruta implicită
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
