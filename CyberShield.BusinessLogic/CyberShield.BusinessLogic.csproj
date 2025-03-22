@@ -41,14 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BL Struct\AuthBL.cs" />
     <Compile Include="BusinessLogic.cs" />
     <Compile Include="Core\UserApi.cs" />
+    <Compile Include="Interface\IAuth.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BL Struct\" />
-    <Folder Include="Interface\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\CyberShield.Domain\CyberShield.Domain.csproj">
       <Project>{83986ea8-38a6-4822-9e00-dc612f5cbaac}</Project>
