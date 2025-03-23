@@ -1,0 +1,208 @@
+@model CyberShieldWeb.Models.Blog.BlogPost
+@using System.Globalization
+
+@{
+    ViewBag.Title = Model.Title + " - CyberShield";
+}
+
+<div class="blog-post-container">
+    <div class="container">
+        <article class="blog-post-full">
+            <div class="post-header">
+                <div class="post-category">@Model.Category</div>
+                <h1 class="post-title">@Model.Title</h1>
+                <div class="post-meta">
+                    <span class="post-author">De @Model.Author</span>
+                    <span class="post-date">@Model.PostedDate.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("ro-RO"))</span>
+                </div>
+            </div>
+
+            <div class="post-featured-image">
+                <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid" />
+            </div>
+
+            <div class="post-content">
+                @Html.Raw(Model.Content)
+            </div>
+        </article>
+
+        <!-- Related Posts Section -->
+        <div class="related-posts">
+            <h3>Articole similare</h3>
+            <div class="row">
+                @for (int i = 0; i < 3; i++)
+                {
+                    <div class="col-md-4">
+                        <div class="related-post-card">
+                            <div class="post-image">
+                                <img src="/Content/images/blog/placeholder.jpg" alt="Articol similar" class="img-fluid" />
+                            </div>
+                            <div class="post-category">Securitate</div>
+                            <h4>Titlu articol similar</h4>
+                            <div class="post-meta">
+                                <span class="post-date">12 martie 2024</span>
+                            </div>
+                            <a href="#" class="continue-reading">Continuă citirea</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .blog-post-container {
+            padding: 4rem 0;
+            background-color: var(--light-color);
+        }
+
+        .blog-post-full {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .post-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .post-category {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .post-title {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .post-meta {
+            font-family: 'Lato', sans-serif;
+            color: var(--gray-color);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .post-meta span:not(:last-child)::after {
+            content: "·";
+            margin: 0 0.5rem;
+        }
+
+        .post-featured-image {
+            margin: -2rem -2rem 2rem -2rem;
+        }
+
+        .post-featured-image img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+        }
+
+        .post-content {
+            font-family: 'Lato', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--dark-color);
+        }
+
+        /* Related Posts Styles */
+        .related-posts {
+            margin-top: 4rem;
+        }
+
+        .related-posts h3 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--dark-color);
+        }
+
+        .related-post-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .related-post-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .related-post-card .post-image {
+            margin: -1rem -1rem 1rem -1rem;
+            overflow: hidden;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .related-post-card .post-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .related-post-card:hover .post-image img {
+            transform: scale(1.05);
+        }
+
+        .related-post-card h4 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            color: var(--dark-color);
+        }
+
+        .related-post-card .post-category {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.8rem;
+        }
+
+        .related-post-card .post-meta {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .related-post-card .continue-reading {
+            font-family: 'Lato', sans-serif;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s ease;
+        }
+
+        .related-post-card .continue-reading:hover {
+            color: var(--dark-color);
+            text-decoration: none;
+        }
+
+        .related-post-card .continue-reading::after {
+            content: "→";
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .related-post-card .continue-reading:hover::after {
+            transform: translateX(5px);
+        }
+    </style>
+} 
