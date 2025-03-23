@@ -41,12 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\RequestStatus.cs" />
+    <Compile Include="Model\Client\ClientDTO.cs" />
+    <Compile Include="Model\PenetrationTesting\NetworkPentestRequestDTO.cs" />
     <Compile Include="Model\User\UserLoginDTO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Enums\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\CyberShield.Helper\CyberShield.Helper.csproj">
       <Project>{670ee58e-3843-41b9-b212-7d41fde6cd92}</Project>
