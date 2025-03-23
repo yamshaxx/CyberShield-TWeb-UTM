@@ -119,6 +119,17 @@
     <Content Include="Content\css\site.css" />
     <Content Include="Content\font-awesome.css" />
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\img\favicon\code.svg" />
+    <Content Include="Content\img\favicon\globe.svg" />
+    <Content Include="Content\img\favicon\icon8.svg" />
+    <Content Include="Content\img\favicon\icons8-network.png" />
+    <Content Include="Content\img\favicon\icons8-shield.png" />
+    <Content Include="Content\img\favicon\icons8-team-100.png" />
+    <Content Include="Content\img\favicon\icons8-world.png" />
+    <Content Include="Content\img\favicon\network.svg" />
+    <Content Include="Content\img\favicon\shield.svg" />
+    <Content Include="Content\img\favicon\team.svg" />
+    <Content Include="Content\img\shield-icon.svg" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\themes\base\accordion.css" />
     <Content Include="Content\themes\base\all.css" />
@@ -184,6 +195,7 @@
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\js\main.js" />
+    <Content Include="Scripts\site.js" />
     <Content Include="Web.config" />
     <Content Include="Views\Shared\_Navigation.cshtml" />
   </ItemGroup>
@@ -194,6 +206,7 @@
     <Compile Include="Controllers\BlogController.cs" />
     <Compile Include="Controllers\DespreController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\ServiciiController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -238,6 +251,9 @@
     <Content Include="Views\Blog\Post.cshtml" />
     <Content Include="Views\Despre\Index.cshtml" />
     <Content Include="Views\Blog\ArticleView.cshtml" />
+    <Content Include="Views\Servicii\Index.cshtml" />
+    <Content Include="Views\Servicii\TestareaPenetrarii.cshtml" />
+    <Content Include="Views\Shared\_Footer.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

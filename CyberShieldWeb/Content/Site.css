@@ -44,3 +44,24 @@ nav .nav-link {
   font-family: 'Lato', sans-serif;
   font-weight: 400;
 }
+
+/* Dropdown Menu Styling */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Testare Penetrare Cards */
+.card {
+  transition: transform 0.3s, box-shadow 0.3s;
+  background-color: #fff;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.icon-wrapper {
+  margin: 0 auto;
+}
