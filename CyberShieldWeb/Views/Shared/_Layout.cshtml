@@ -8,12 +8,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CyberShield</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-    <!-- CSS Bundle -->
+    @Styles.Render("~/Content/favicon")
     @Styles.Render("~/Content/css")
     @RenderSection("Styles", required: false)
+
+    <style>
+        .footer {
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        .main-content {
+            min-height: calc(100vh - 300px);
+        }
+    </style>
 </head>
 <body>
     @Html.Partial("_Navigation")
@@ -24,38 +35,7 @@
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5>Contact</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-phone"></i> +40 123 456 789</li>
-                        <li><i class="fas fa-envelope"></i> contact@cybershield.md</li>
-                        <li><i class="fas fa-map-marker-alt"></i> Chișinău, Moldova</li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Link-uri Rapide</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="/">Acasă</a></li>
-                        <li><a href="/despre">Despre Noi</a></li>
-                        <li><a href="/servicii">Servicii</a></li>
-                        <li><a href="/contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Urmăriți-ne</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
-                        <li><a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a></li>
-                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
+    @Html.Partial("_Footer")
 
     <!-- Scripts -->
     <script src="~/Scripts/jquery-3.7.1.min.js"></script>
