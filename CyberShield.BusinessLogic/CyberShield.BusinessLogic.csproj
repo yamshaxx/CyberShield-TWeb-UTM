@@ -42,9 +42,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BL Struct\AuthBL.cs" />
+    <Compile Include="BL Struct\PenetrationTesting\NetworkPentestService.cs" />
     <Compile Include="BusinessLogic.cs" />
     <Compile Include="Core\UserApi.cs" />
     <Compile Include="Interface\IAuth.cs" />
+    <Compile Include="Interface\INetworkPentestService.cs" />
+    <Compile Include="Interface\Repositories\IClientRepository.cs" />
+    <Compile Include="Interface\Repositories\INetworkPentestRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
