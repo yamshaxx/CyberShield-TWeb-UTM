@@ -13,5 +13,12 @@ namespace CyberShieldWeb.Controllers
         {
             return View();
         }
+
+        // GET: Dashboard
+        [Authorize]
+        public ActionResult Dashboard()
+        {
+            return View();
+        }
     }
 }

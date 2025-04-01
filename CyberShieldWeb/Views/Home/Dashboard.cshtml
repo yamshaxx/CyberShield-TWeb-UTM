@@ -1,0 +1,43 @@
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2>Dashboard</h2>
+                </div>
+                <div class="card-body">
+                    <h3>Welcome, @User.Identity.Name!</h3>
+                    <p class="lead">You've successfully accessed the protected area of the application.</p>
+                    <hr />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">Your Account</div>
+                                <div class="card-body">
+                                    <p>This is your secure dashboard area.</p>
+                                    <p>Only authenticated users can see this content.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">Security</div>
+                                <div class="card-body">
+                                    <p>Your password is securely hashed in our database.</p>
+                                    <p>We use Forms Authentication cookies for your login session.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Logout", "Auth")" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

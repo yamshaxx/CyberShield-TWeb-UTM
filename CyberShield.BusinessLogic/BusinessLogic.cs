@@ -15,6 +15,10 @@ namespace CyberShield.BusinessLogic
         private readonly IAuth _authBL;
         private readonly INetworkPentestService _networkPentestService;
 
+        public BusinessLogic()
+        {
+        }
+
         public BusinessLogic(INetworkPentestRepository networkPentestRepository, IClientRepository clientRepository)
         {
             _authBL = new AuthBL();

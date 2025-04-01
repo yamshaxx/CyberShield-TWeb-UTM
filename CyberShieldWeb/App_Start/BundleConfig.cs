@@ -28,6 +28,17 @@ namespace CyberShieldWeb.App_Start
             faviconBundle.Include("~/favicon.ico");
             bundles.Add(faviconBundle);
 
+            // jQuery Bundle
+            var jqueryBundle = new ScriptBundle("~/bundles/jquery");
+            jqueryBundle.Include("~/Scripts/jquery-3.7.1.min.js");
+            bundles.Add(jqueryBundle);
+
+            // jQuery Validation Bundle
+            var jqueryValBundle = new ScriptBundle("~/bundles/jqueryval");
+            jqueryValBundle.Include(
+                "~/Scripts/jquery.validate.min.js");
+            bundles.Add(jqueryValBundle);
+
             // Site Scripts Bundle
             var siteBundle = new ScriptBundle("~/bundles/site");
             siteBundle.Include(

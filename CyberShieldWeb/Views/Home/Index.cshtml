@@ -17,6 +17,16 @@
             <div class="hero-buttons">
                 <a href="#servicii" class="btn btn-primary">Serviciile Noastre</a>
                 <a href="#contact" class="btn btn-outline">Contactați-ne</a>
+                @if (Request.IsAuthenticated)
+                {
+                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-success">Dashboard</a>
+                    <a href="@Url.Action("Logout", "Auth")" class="btn btn-danger">Logout</a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Login", "Auth")" class="btn btn-info">Login</a>
+                    <a href="@Url.Action("Register", "Auth")" class="btn btn-secondary">Register</a>
+                }
             </div>
         </div>
     </div>

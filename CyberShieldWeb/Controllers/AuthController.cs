@@ -7,12 +7,16 @@ using CyberShieldWeb.Models.Auth;
 using CyberShield.Domain.Model.User;
 using CyberShield.BusinessLogic.Interface;
 using CyberShield.BusinessLogic;
+using CyberShield.Domain.Data;
+using System.Web.Helpers;
+using System.Web.Security;
 
 namespace CyberShieldWeb.Controllers
 {
     public class AuthController : Controller
     {
         private readonly IAuth _auth;
+        private readonly CyberShieldContext _db = new CyberShieldContext();
 
         public AuthController()
         {
@@ -36,6 +40,130 @@ namespace CyberShieldWeb.Controllers
             };
             string taken = _auth.UserAuthLogic(data);
             return View();
+        }
+
+        // GET: Auth/Register
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Auth/Register
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Check if username or email already exists
+                    if (_db.Users.Any(u => u.Username == model.Username))
+                    {
+                        ModelState.AddModelError("Username", "Username already exists.");
+                        return View(model);
+                    }
+
+                    if (_db.Users.Any(u => u.Email == model.Email))
+                    {
+                        ModelState.AddModelError("Email", "Email already exists.");
+                        return View(model);
+                    }
+
+                    // Create a new user
+                    var user = new User
+                    {
+                        Username = model.Username,
+                        Email = model.Email,
+                        PasswordHash = Crypto.HashPassword(model.Password)
+                    };
+
+                    // Save the user to the database
+                    _db.Users.Add(user);
+                    _db.SaveChanges();
+
+                    // Auto-login the user after registration
+                    FormsAuthentication.SetAuthCookie(user.Username, false);
+
+                    // Redirect to home page
+                    return RedirectToAction("Index", "Home");
+                }
+                catch (Exception ex)
+                {
+                    // Log the error (you could add real logging)
+                    ModelState.AddModelError("", "An error occurred while registering: " + ex.Message);
+                }
+            }
+
+            // If we got this far, something failed; redisplay form
+            return View(model);
+        }
+
+        // GET: Auth/Login
+        public ActionResult Login(string returnUrl)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
+        }
+
+        // POST: Auth/Login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(LoginViewModel model, string returnUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Find the user by username
+                    var user = _db.Users.SingleOrDefault(u => u.Username == model.Username);
+
+                    if (user != null && Crypto.VerifyHashedPassword(user.PasswordHash, model.Password))
+                    {
+                        // Set the authentication cookie
+                        FormsAuthentication.SetAuthCookie(user.Username, model.RememberMe);
+
+                        // Redirect the user to the return URL if provided
+                        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        {
+                            return Redirect(returnUrl);
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Invalid username or password.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error
+                    ModelState.AddModelError("", "An error occurred while logging in: " + ex.Message);
+                }
+            }
+
+            // If we got this far, something failed; redisplay form
+            ViewBag.ReturnUrl = returnUrl;
+            return View(model);
+        }
+
+        // GET: Auth/Logout
+        public ActionResult Logout()
+        {
+            FormsAuthentication.SignOut();
+            return RedirectToAction("Login");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
