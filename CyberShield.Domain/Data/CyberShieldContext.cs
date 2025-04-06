@@ -1,3 +1,4 @@
+using CyberShield.Domain.Model.Blog;
 using CyberShield.Domain.Model.User;
 using System.Data.Entity;
 
@@ -10,6 +11,8 @@ namespace CyberShield.Domain.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<BlogPost> BlogPosts { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

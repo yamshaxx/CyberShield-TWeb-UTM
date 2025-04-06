@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using CyberShield.Domain.Model.Blog;
 
 namespace CyberShield.Domain.Model.User
 {
@@ -19,5 +21,16 @@ namespace CyberShield.Domain.Model.User
         
         [Required]
         public string PasswordHash { get; set; }
+        
+        public bool IsAdmin { get; set; }
+        
+        // Navigation properties
+        public virtual ICollection<Comment> Comments { get; set; }
+        
+        public User()
+        {
+            IsAdmin = false;
+            Comments = new HashSet<Comment>();
+        }
     }
 } 
