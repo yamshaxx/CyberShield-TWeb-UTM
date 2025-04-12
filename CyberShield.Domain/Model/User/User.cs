@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using CyberShield.Domain.Model.Blog;
+using BlogComment = CyberShield.Domain.Model.Blog.Comment;
 
 namespace CyberShield.Domain.Model.User
 {
@@ -25,12 +25,12 @@ namespace CyberShield.Domain.Model.User
         public bool IsAdmin { get; set; }
         
         // Navigation properties
-        public virtual ICollection<Comment> Comments { get; set; }
+        public virtual ICollection<BlogComment> Comments { get; set; }
         
         public User()
         {
             IsAdmin = false;
-            Comments = new HashSet<Comment>();
+            Comments = new HashSet<BlogComment>();
         }
     }
 } 

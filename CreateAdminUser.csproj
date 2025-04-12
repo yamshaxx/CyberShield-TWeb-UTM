@@ -4,16 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{83986EA8-38A6-4822-9E00-DC612F5CBAAC}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CyberShield.Domain</RootNamespace>
-    <AssemblyName>CyberShield.Domain</AssemblyName>
+    <ProjectGuid>{1A1B1C1D-1E1F-1A1B-1C1D-1E1F1A1B1C1D}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CreateAdminUser</RootNamespace>
+    <AssemblyName>CreateAdminUser</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -32,14 +34,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>CyberShieldWeb\bin\System.Web.Helpers.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,26 +55,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\BlogPost.cs" />
-    <Compile Include="Data\Comment.cs" />
-    <Compile Include="Data\CyberShieldContext.cs" />
-    <Compile Include="Enums\RequestStatus.cs" />
-    <Compile Include="Model\Blog\BlogPost.cs" />
-    <Compile Include="Model\Blog\Comment.cs" />
-    <Compile Include="Model\Client\ClientDTO.cs" />
-    <Compile Include="Model\PenetrationTesting\NetworkPentestRequestDTO.cs" />
-    <Compile Include="Model\User\User.cs" />
-    <Compile Include="Model\User\UserLoginDTO.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CreateAdminUser.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CyberShield.Helper\CyberShield.Helper.csproj">
-      <Project>{670ee58e-3843-41b9-b212-7d41fde6cd92}</Project>
-      <Name>CyberShield.Helper</Name>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="CyberShield.Domain\CyberShield.Domain.csproj">
+      <Project>{83986EA8-38A6-4822-9E00-DC612F5CBAAC}</Project>
+      <Name>CyberShield.Domain</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-</Project>
+</Project> 

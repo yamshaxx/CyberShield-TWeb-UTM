@@ -1,0 +1,110 @@
+@model CyberShieldWeb.Models.Admin.AdminDashboardViewModel
+
+@{
+    ViewBag.Title = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h1>Admin Dashboard</h1>
+    <hr />
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text display-4">@Model.UserCount</p>
+                    <a href="@Url.Action("Users", "Admin")" class="btn btn-light">Manage Users</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Blog Posts</h5>
+                    <p class="card-text display-4">@Model.BlogPostCount</p>
+                    <a href="@Url.Action("BlogPosts", "Admin")" class="btn btn-light">Manage Blog Posts</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Comments</h5>
+                    <p class="card-text display-4">@Model.CommentCount</p>
+                    <a href="@Url.Action("Comments", "Admin")" class="btn btn-light">Manage Comments</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Latest Users</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.LatestUsers)
+                            {
+                                <tr>
+                                    <td>@user.Id</td>
+                                    <td>@user.Username</td>
+                                    <td>@user.Email</td>
+                                    <td>@(user.IsAdmin ? "Admin" : "User")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Users", "Admin")" class="btn btn-primary">View All Users</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Latest Blog Posts</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var post in Model.LatestBlogPosts)
+                            {
+                                <tr>
+                                    <td>@post.Id</td>
+                                    <td>@post.Title</td>
+                                    <td>@post.Author</td>
+                                    <td>@post.PostedDate.ToShortDateString()</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("BlogPosts", "Admin")" class="btn btn-primary">View All Blog Posts</a>
+                    <a href="@Url.Action("CreateBlogPost", "Admin")" class="btn btn-success float-end">Create New Blog Post</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

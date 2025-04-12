@@ -220,6 +220,10 @@
     <Compile Include="Models\Auth\LoginViewModel.cs" />
     <Compile Include="Models\Auth\RegisterViewModel.cs" />
     <Compile Include="Models\Blog\BlogPost.cs" />
+    <Compile Include="Models\Blog\BlogPostViewModel.cs" />
+    <Compile Include="Models\Blog\CommentViewModel.cs" />
+    <Compile Include="Models\Admin\AdminViewModels.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

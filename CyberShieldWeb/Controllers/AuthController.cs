@@ -120,8 +120,22 @@ namespace CyberShieldWeb.Controllers
 
                     if (user != null && Crypto.VerifyHashedPassword(user.PasswordHash, model.Password))
                     {
-                        // Set the authentication cookie
-                        FormsAuthentication.SetAuthCookie(user.Username, model.RememberMe);
+                        // Create custom authentication ticket with roles
+                        var ticket = new FormsAuthenticationTicket(
+                            1,                              // ticket version
+                            user.Username,                  // username
+                            DateTime.Now,                   // issue time
+                            DateTime.Now.AddMinutes(30),    // expiration time
+                            model.RememberMe,               // persistent
+                            user.IsAdmin ? "Admin" : "User" // user data/roles
+                        );
+
+                        // Encrypt the ticket
+                        var encryptedTicket = FormsAuthentication.Encrypt(ticket);
+
+                        // Create the cookie
+                        var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+                        Response.Cookies.Add(cookie);
 
                         // Redirect the user to the return URL if provided
                         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
