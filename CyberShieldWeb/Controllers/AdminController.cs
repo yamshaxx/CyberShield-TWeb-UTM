@@ -4,8 +4,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
 using CyberShield.Domain.Data;
-using DomainBlog = CyberShield.Domain.Model.Blog;
-using DomainUser = CyberShield.Domain.Model.User;
+using BlogModel = CyberShield.Domain.Model.Blog;
+using UserModel = CyberShield.Domain.Model.User;
 using CyberShieldWeb.Models.Admin;
 
 namespace CyberShieldWeb.Controllers
@@ -13,7 +13,20 @@ namespace CyberShieldWeb.Controllers
     [Authorize]
     public class AdminController : Controller
     {
-        private readonly CyberShieldContext _db = new CyberShieldContext();
+        private CyberShieldContext _db;
+        
+        // Lazy-load the database context to avoid initialization during controller construction
+        private CyberShieldContext Db
+        {
+            get
+            {
+                if (_db == null)
+                {
+                    _db = new CyberShieldContext();
+                }
+                return _db;
+            }
+        }
 
         // GET: Admin
         [Authorize(Roles = "Admin")]
@@ -21,11 +34,11 @@ namespace CyberShieldWeb.Controllers
         {
             var adminDashboard = new AdminDashboardViewModel
             {
-                UserCount = _db.Users.Count(),
-                BlogPostCount = _db.BlogPosts.Count(),
-                CommentCount = _db.Comments.Count(),
-                LatestUsers = _db.Users.OrderByDescending(u => u.Id).Take(5).ToList(),
-                LatestBlogPosts = _db.BlogPosts.OrderByDescending(b => b.PostedDate).Take(5).ToList()
+                UserCount = Db.Users.Count(),
+                BlogPostCount = Db.BlogPosts.Count(),
+                CommentCount = Db.Comments.Count(),
+                LatestUsers = Db.Users.OrderByDescending(u => u.Id).Take(5).ToList(),
+                LatestBlogPosts = Db.BlogPosts.OrderByDescending(b => b.PostedDate).Take(5).ToList()
             };
 
             return View(adminDashboard);
@@ -35,7 +48,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult Users()
         {
-            var users = _db.Users.ToList();
+            var users = Db.Users.ToList();
             return View(users);
         }
 
@@ -43,7 +56,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult UserDetails(int id)
         {
-            var user = _db.Users.Find(id);
+            var user = Db.Users.Find(id);
             if (user == null)
             {
                 return HttpNotFound();
@@ -56,7 +69,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult EditUser(int id)
         {
-            var user = _db.Users.Find(id);
+            var user = Db.Users.Find(id);
             if (user == null)
             {
                 return HttpNotFound();
@@ -81,7 +94,7 @@ namespace CyberShieldWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _db.Users.Find(model.Id);
+                var user = Db.Users.Find(model.Id);
                 if (user == null)
                 {
                     return HttpNotFound();
@@ -91,8 +104,8 @@ namespace CyberShieldWeb.Controllers
                 user.Email = model.Email;
                 user.IsAdmin = model.IsAdmin;
 
-                _db.Entry(user).State = EntityState.Modified;
-                _db.SaveChanges();
+                Db.Entry(user).State = EntityState.Modified;
+                Db.SaveChanges();
 
                 return RedirectToAction("Users");
             }
@@ -104,7 +117,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult DeleteUser(int id)
         {
-            var user = _db.Users.Find(id);
+            var user = Db.Users.Find(id);
             if (user == null)
             {
                 return HttpNotFound();
@@ -119,14 +132,14 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult DeleteUserConfirmed(int id)
         {
-            var user = _db.Users.Find(id);
+            var user = Db.Users.Find(id);
             if (user == null)
             {
                 return HttpNotFound();
             }
 
-            _db.Users.Remove(user);
-            _db.SaveChanges();
+            Db.Users.Remove(user);
+            Db.SaveChanges();
 
             return RedirectToAction("Users");
         }
@@ -135,7 +148,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult BlogPosts()
         {
-            var blogPosts = _db.BlogPosts.OrderByDescending(p => p.PostedDate).ToList();
+            var blogPosts = Db.BlogPosts.OrderByDescending(p => p.PostedDate).ToList();
             return View(blogPosts);
         }
 
@@ -143,7 +156,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult EditBlogPost(int id)
         {
-            var blogPost = _db.BlogPosts.Find(id);
+            var blogPost = Db.BlogPosts.Find(id);
             if (blogPost == null)
             {
                 return HttpNotFound();
@@ -172,7 +185,7 @@ namespace CyberShieldWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                var blogPost = _db.BlogPosts.Find(model.Id);
+                var blogPost = Db.BlogPosts.Find(model.Id);
                 if (blogPost == null)
                 {
                     return HttpNotFound();
@@ -185,8 +198,8 @@ namespace CyberShieldWeb.Controllers
                 blogPost.Category = model.Category;
                 blogPost.ImageUrl = model.ImageUrl;
 
-                _db.Entry(blogPost).State = EntityState.Modified;
-                _db.SaveChanges();
+                Db.Entry(blogPost).State = EntityState.Modified;
+                Db.SaveChanges();
 
                 return RedirectToAction("BlogPosts");
             }
@@ -213,7 +226,7 @@ namespace CyberShieldWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                var blogPost = new DomainBlog.BlogPost
+                var blogPost = new BlogModel.BlogPost
                 {
                     Title = model.Title,
                     Author = model.Author,
@@ -224,8 +237,8 @@ namespace CyberShieldWeb.Controllers
                     ImageUrl = model.ImageUrl
                 };
 
-                _db.BlogPosts.Add((BlogPost)blogPost);
-                _db.SaveChanges();
+                Db.BlogPosts.Add(blogPost);
+                Db.SaveChanges();
 
                 return RedirectToAction("BlogPosts");
             }
@@ -237,7 +250,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult DeleteBlogPost(int id)
         {
-            var blogPost = _db.BlogPosts.Find(id);
+            var blogPost = Db.BlogPosts.Find(id);
             if (blogPost == null)
             {
                 return HttpNotFound();
@@ -252,14 +265,14 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult DeleteBlogPostConfirmed(int id)
         {
-            var blogPost = _db.BlogPosts.Find(id);
+            var blogPost = Db.BlogPosts.Find(id);
             if (blogPost == null)
             {
                 return HttpNotFound();
             }
 
-            _db.BlogPosts.Remove(blogPost);
-            _db.SaveChanges();
+            Db.BlogPosts.Remove(blogPost);
+            Db.SaveChanges();
 
             return RedirectToAction("BlogPosts");
         }
@@ -268,7 +281,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult Comments()
         {
-            var comments = _db.Comments
+            var comments = Db.Comments
                 .Include(c => c.User)
                 .Include(c => c.BlogPost)
                 .OrderByDescending(c => c.PostedAt)
@@ -281,7 +294,7 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult DeleteComment(int id)
         {
-            var comment = _db.Comments
+            var comment = Db.Comments
                 .Include(c => c.User)
                 .Include(c => c.BlogPost)
                 .FirstOrDefault(c => c.Id == id);
@@ -300,21 +313,21 @@ namespace CyberShieldWeb.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult DeleteCommentConfirmed(int id)
         {
-            var comment = _db.Comments.Find(id);
+            var comment = Db.Comments.Find(id);
             if (comment == null)
             {
                 return HttpNotFound();
             }
 
-            _db.Comments.Remove(comment);
-            _db.SaveChanges();
+            Db.Comments.Remove(comment);
+            Db.SaveChanges();
 
             return RedirectToAction("Comments");
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _db != null)
             {
                 _db.Dispose();
             }

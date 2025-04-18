@@ -1,36 +1,169 @@
+@model CyberShieldWeb.Models.UserDashboardViewModel
+@using System.Globalization
+
 @{
-    ViewBag.Title = "Dashboard";
+    ViewBag.Title = "Dashboard - CyberShield";
 }
 
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
-            <div class="card shadow">
+            <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h2>Dashboard</h2>
+                    <h2>Dashboard Utilizator</h2>
                 </div>
                 <div class="card-body">
-                    <h3>Welcome, @User.Identity.Name!</h3>
-                    <p class="lead">You've successfully accessed the protected area of the application.</p>
+                    <h3>Bine ai venit, @Model.Username!</h3>
+                    <p class="lead">Acesta este panoul tău personal de control.</p>
                     <hr />
-                    <div class="row">
+                    
+                    <div class="row mb-4">
                         <div class="col-md-6">
                             <div class="card mb-3">
-                                <div class="card-header">Your Account</div>
+                                <div class="card-header">
+                                    <h4>Informații Cont</h4>
+                                </div>
                                 <div class="card-body">
-                                    <p>This is your secure dashboard area.</p>
-                                    <p>Only authenticated users can see this content.</p>
+                                    <p><strong>Username:</strong> @Model.Username</p>
+                                    <p><strong>Email:</strong> @Model.Email</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card mb-3">
-                                <div class="card-header">Security</div>
+                                <div class="card-header">
+                                    <h4>Securitate</h4>
+                                </div>
                                 <div class="card-body">
-                                    <p>Your password is securely hashed in our database.</p>
-                                    <p>We use Forms Authentication cookies for your login session.</p>
+                                    <p>Sesiunea ta este securizată.</p>
+                                    <p>Parola ta este criptată în baza noastră de date.</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Comentariile tale -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0">Comentariile tale (@Model.Comments.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Comments.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Articol</th>
+                                                <th>Comentariu</th>
+                                                <th>Data publicării</th>
+                                                <th>Acțiuni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var comment in Model.Comments)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <a href="@Url.Action("Post", "Blog", new { id = comment.BlogPostId })">
+                                                            @comment.BlogPostTitle
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        @if (comment.Content.Length > 50)
+                                                        {
+                                                            @(comment.Content.Substring(0, 50) + "...")
+                                                        }
+                                                        else
+                                                        {
+                                                            @comment.Content
+                                                        }
+                                                    </td>
+                                                    <td>@comment.PostedAt.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>
+                                                        <a href="@Url.Action("Post", "Blog", new { id = comment.BlogPostId })" class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-eye"></i> Vezi
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu ai publicat încă niciun comentariu. Vizitează <a href="@Url.Action("Index", "Blog")">blogul nostru</a> pentru a lăsa comentarii!</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- Programările tale -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Programările tale (@Model.Appointments.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Appointments.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Serviciu</th>
+                                                <th>Data programată</th>
+                                                <th>Status</th>
+                                                <th>Data solicitării</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var appointment in Model.Appointments)
+                                            {
+                                                <tr>
+                                                    <td>@appointment.ServiceType</td>
+                                                    <td>@appointment.PreferredDate.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>
+                                                        @{
+                                                            string statusClass = "badge bg-secondary";
+                                                            string statusText = "Necunoscut";
+                                                            
+                                                            switch (appointment.Status)
+                                                            {
+                                                                case "Pending":
+                                                                    statusClass = "badge bg-warning text-dark";
+                                                                    statusText = "În așteptare";
+                                                                    break;
+                                                                case "Confirmed":
+                                                                    statusClass = "badge bg-success";
+                                                                    statusText = "Confirmată";
+                                                                    break;
+                                                                case "Completed":
+                                                                    statusClass = "badge bg-info";
+                                                                    statusText = "Finalizată";
+                                                                    break;
+                                                                case "Cancelled":
+                                                                    statusClass = "badge bg-danger";
+                                                                    statusText = "Anulată";
+                                                                    break;
+                                                            }
+                                                        }
+                                                        <span class="@statusClass">@statusText</span>
+                                                    </td>
+                                                    <td>@appointment.CreatedAt.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu ai nicio programare. <a href="@Url.Action("Programeaza", "Servicii")">Programează o consultanță</a> cu experții noștri!</p>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

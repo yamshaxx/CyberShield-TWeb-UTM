@@ -24,12 +24,15 @@ namespace CyberShield.Domain.Model.User
         
         public bool IsAdmin { get; set; }
         
+        public bool IsSpecialist { get; set; }
+        
         // Navigation properties
         public virtual ICollection<BlogComment> Comments { get; set; }
         
         public User()
         {
             IsAdmin = false;
+            IsSpecialist = false;
             Comments = new HashSet<BlogComment>();
         }
     }

@@ -1,0 +1,90 @@
+@model CyberShieldWeb.Models.CreateBlogPostViewModel
+
+@{
+    ViewBag.Title = "Creează articol nou - CyberShield";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2>Creează un articol nou</h2>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("CreateBlogPost", "Specialist", FormMethod.Post, new { @class = "blog-post-form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <div class="form-group mb-3">
+                                    @Html.LabelFor(m => m.Title, "Titlu", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "Titlul articolului" })
+                                    @Html.ValidationMessageFor(m => m.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    @Html.LabelFor(m => m.Category, "Categorie", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Category, 
+                                        new List<SelectListItem> {
+                                            new SelectListItem { Value = "Securitate Cibernetică", Text = "Securitate Cibernetică" },
+                                            new SelectListItem { Value = "Testare Penetrare", Text = "Testare Penetrare" },
+                                            new SelectListItem { Value = "GDPR", Text = "GDPR" },
+                                            new SelectListItem { Value = "Inginerie Socială", Text = "Inginerie Socială" },
+                                            new SelectListItem { Value = "Actualizări", Text = "Actualizări" }
+                                        }, 
+                                        new { @class = "form-select" })
+                                    @Html.ValidationMessageFor(m => m.Category, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.Summary, "Rezumat", new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.Summary, new { @class = "form-control", rows = "3", placeholder = "Un scurt rezumat al articolului (va fi afișat în lista de articole)" })
+                            @Html.ValidationMessageFor(m => m.Summary, "", new { @class = "text-danger" })
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.ImageUrl, "URL Imagine (opțional)", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.ImageUrl, new { @class = "form-control", placeholder = "URL-ul imaginii principale (ex: /Content/img/blog/example.jpg)" })
+                            @Html.ValidationMessageFor(m => m.ImageUrl, "", new { @class = "text-danger" })
+                            <small class="form-text text-muted">Lasă gol pentru a folosi imaginea implicită.</small>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            @Html.LabelFor(m => m.Content, "Conținut", new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.Content, new { @class = "form-control", id = "editor", rows = "15", placeholder = "Conținutul articolului..." })
+                            @Html.ValidationMessageFor(m => m.Content, "", new { @class = "text-danger" })
+                        </div>
+                        
+                        <div class="form-group text-end">
+                            <a href="@Url.Action("Dashboard", "Specialist")" class="btn btn-secondary me-2">Anulează</a>
+                            <button type="submit" class="btn btn-primary">Publică articolul</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#editor',
+            height: 500,
+            menubar: true,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        });
+    </script>
+} 

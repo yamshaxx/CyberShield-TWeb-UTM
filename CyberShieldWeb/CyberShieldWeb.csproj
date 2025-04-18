@@ -213,6 +213,7 @@
     <Compile Include="Controllers\DespreController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ServiciiController.cs" />
+    <Compile Include="Controllers\SpecialistController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -222,6 +223,8 @@
     <Compile Include="Models\Blog\BlogPost.cs" />
     <Compile Include="Models\Blog\BlogPostViewModel.cs" />
     <Compile Include="Models\Blog\CommentViewModel.cs" />
+    <Compile Include="Models\Specialist\SpecialistViewModels.cs" />
+    <Compile Include="Models\UserDashboardViewModel.cs" />
     <Compile Include="Models\Admin\AdminViewModels.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

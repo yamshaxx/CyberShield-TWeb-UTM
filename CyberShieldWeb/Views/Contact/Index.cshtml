@@ -1,0 +1,153 @@
+@{
+    ViewBag.Title = "Contact - CyberShield";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h2 mb-0">Contactați-ne</h1>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <p class="lead">Aveți întrebări sau doriți să aflați mai multe despre serviciile noastre? Contactați-ne utilizând formularul de mai jos sau informațiile de contact.</p>
+                    </div>
+                    
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <h2 class="h4 mb-3">Informații de contact</h2>
+                            <ul class="list-unstyled contact-info">
+                                <li class="mb-3">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-map-marker-alt text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Adresă:</strong><br>
+                                            Str. Studenților 9/7,<br>
+                                            Chișinău, MD-2045,<br>
+                                            Republica Moldova
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="mb-3">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-phone text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Telefon:</strong><br>
+                                            +373 22 509 908
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="mb-3">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-envelope text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Email:</strong><br>
+                                            <a href="mailto:contact@cybershield.md">contact@cybershield.md</a>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-clock text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Program:</strong><br>
+                                            Luni - Vineri: 09:00 - 18:00<br>
+                                            Sâmbătă - Duminică: Închis
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            
+                            <div class="social-media mt-4">
+                                <h4 class="h5 mb-3">Urmăriți-ne</h4>
+                                <div class="d-flex gap-3">
+                                    <a href="#" class="text-primary"><i class="fab fa-facebook-f fa-lg"></i></a>
+                                    <a href="#" class="text-primary"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                                    <a href="#" class="text-primary"><i class="fab fa-twitter fa-lg"></i></a>
+                                    <a href="#" class="text-primary"><i class="fab fa-instagram fa-lg"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h2 class="h4 mb-3">Trimiteți-ne un mesaj</h2>
+                            @using (Html.BeginForm("SendMessage", "Contact", FormMethod.Post, new { @class = "contact-form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nume*</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email*</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subiect*</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Mesaj*</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="consent" required>
+                                    <label class="form-check-label" for="consent">Sunt de acord cu prelucrarea datelor mele personale în conformitate cu <a href="#">Politica de confidențialitate</a>.*</label>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">Trimite mesajul</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="map-container">
+                        <h2 class="h4 mb-3">Locația noastră</h2>
+                        <div class="ratio ratio-16x9">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720.1033937072694!2d28.864456776888824!3d47.03910597119936!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97c333530b1c1%3A0xc33ad10ca962862e!2sFacultatea%20Calculatoare%2C%20Informatic%C4%83%20%C8%99i%20Microelectronic%C4%83!5e0!3m2!1sen!2s!4v1678893721694!5m2!1sen!2s" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .contact-info .fas {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .map-container {
+            margin-top: 2rem;
+        }
+        
+        .social-media a {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        
+        .social-media a:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+} 

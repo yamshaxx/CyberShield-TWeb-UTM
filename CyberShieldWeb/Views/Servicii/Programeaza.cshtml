@@ -1,0 +1,197 @@
+@using System.Web.Mvc
+@{
+    ViewBag.Title = "Programează o consultanță - CyberShield";
+    
+    // Define the service types list
+    var serviceTypes = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Consultanta", Text = "Consultanță în Securitate Cibernetică" },
+        new SelectListItem { Value = "TestareaPenetrarii", Text = "Testarea Penetrării" },
+        new SelectListItem { Value = "ConformitateGDPR", Text = "Conformitate GDPR" },
+        new SelectListItem { Value = "InginerieaSociala", Text = "Inginerie Socială" }
+    };
+    
+    // Get the service type from the query parameter
+    string selectedServiceType = Request.QueryString["serviceType"];
+    
+    // Pre-select the service type if it was passed
+    if (!string.IsNullOrEmpty(selectedServiceType))
+    {
+        foreach (var item in serviceTypes)
+        {
+            item.Selected = (item.Value == selectedServiceType);
+        }
+    }
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h2 mb-0">Programează o consultanță</h1>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <p class="lead">Completați formularul de mai jos pentru a programa o consultanță cu experții noștri în securitate cibernetică.</p>
+                        <p>Un consultant vă va contacta în termen de 24 de ore pentru a confirma programarea și a discuta detaliile.</p>
+                    </div>
+                    
+                    <div class="consultation-benefits mb-4">
+                        <h2 class="h4 mb-3">Beneficiile consultanței inițiale</h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-group mb-4">
+                                    <li class="list-group-item d-flex">
+                                        <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                        <span>Evaluare preliminară a nevoilor de securitate</span>
+                                    </li>
+                                    <li class="list-group-item d-flex">
+                                        <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                        <span>Identificarea vulnerabilităților critice</span>
+                                    </li>
+                                    <li class="list-group-item d-flex">
+                                        <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                        <span>Recomandări specifice pentru organizația dvs.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex">
+                                        <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                        <span>Plan de acțiune personalizat</span>
+                                    </li>
+                                    <li class="list-group-item d-flex">
+                                        <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                        <span>Estimare de costuri pentru serviciile necesare</span>
+                                    </li>
+                                    <li class="list-group-item d-flex">
+                                        <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                        <span>Oportunitatea de a adresa întrebări specifice</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="appointment-form">
+                        <h2 class="h4 mb-3">Detaliile programării</h2>
+                        @using (Html.BeginForm("SubmitProgramare", "Servicii", FormMethod.Post, new { @class = "consultation-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Nume complet*</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email*</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Telefon*</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="company" class="form-label">Companie/Organizație</label>
+                                        <input type="text" class="form-control" id="company" name="company">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="serviceType" class="form-label">Tipul de serviciu*</label>
+                                @Html.DropDownList("serviceType", serviceTypes, new { @class = "form-select", required = "required" })
+                                <small class="form-text text-muted">Selectați serviciul pentru care doriți consultanță.</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="preferredDate" class="form-label">Data preferată pentru consultanță*</label>
+                                <input type="date" class="form-control" id="preferredDate" name="preferredDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                                <small class="form-text text-muted">Selectați o dată cu cel puțin 2 zile lucrătoare în avans.</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Detalii suplimentare sau întrebări</label>
+                                <textarea class="form-control" id="message" name="message" rows="4"></textarea>
+                                <small class="form-text text-muted">Includeți orice informații relevante despre nevoile dvs. de securitate sau întrebări specifice.</small>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="consent" required>
+                                <label class="form-check-label" for="consent">Sunt de acord cu prelucrarea datelor mele personale în conformitate cu <a href="#">Politica de confidențialitate</a>.*</label>
+                            </div>
+                            
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary btn-lg">Programează consultanța</button>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="consultation-info mt-5">
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 mb-2">Informații importante</h3>
+                                    <p class="mb-1">• Consultanța inițială are o durată de aproximativ 60 de minute.</p>
+                                    <p class="mb-1">• Pentru întâlniri online, veți primi un link prin email.</p>
+                                    <p class="mb-1">• Pentru întâlniri la sediul nostru, vă rugăm să ajungeți cu 10 minute înainte de ora programată.</p>
+                                    <p class="mb-0">• În caz de imposibilitate de participare, vă rugăm să ne anunțați cu cel puțin 24 de ore înainte.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .consultation-benefits .fas {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .consultation-info p {
+            font-size: 0.95rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Set minimum date for the date picker (tomorrow)
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const formattedDate = tomorrow.toISOString().split('T')[0];
+            document.getElementById('preferredDate').min = formattedDate;
+        });
+    </script>
+} 

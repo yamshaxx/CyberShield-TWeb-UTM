@@ -4,159 +4,346 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
 using CyberShield.Domain.Data;
-using DomainBlog = CyberShield.Domain.Model.Blog;
-using CyberShield.Domain.Model.User;
+using BlogModel = CyberShield.Domain.Model.Blog;
+using UserModel = CyberShield.Domain.Model.User;
 using CyberShieldWeb.Models.Blog;
 
 namespace CyberShieldWeb.Controllers
 {
     public class BlogController : Controller
     {
-        private readonly CyberShieldContext _db = new CyberShieldContext();
+        private CyberShieldContext _db;
+        
+        // Lazy-load the database context to avoid initialization during controller construction
+        private CyberShieldContext Db
+        {
+            get
+            {
+                if (_db == null)
+                {
+                    _db = new CyberShieldContext();
+                }
+                return _db;
+            }
+        }
 
         // GET: Blog
         public ActionResult Index()
         {
-            var blogPosts = _db.BlogPosts
-                .OrderByDescending(p => p.PostedDate)
-                .ToList();
-
-            // If no blog posts exist yet, create sample posts
-            if (blogPosts.Count == 0)
+            try
             {
-                CreateSampleBlogPosts();
-                blogPosts = _db.BlogPosts
+                // Verify and create database tables directly if they don't exist
+                using (var conn = new System.Data.SqlClient.SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["CyberShieldConnection"].ConnectionString))
+                {
+                    conn.Open();
+                    
+                    // Check if BlogPosts table exists
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(
+                        "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'BlogPosts') " +
+                        "CREATE TABLE BlogPosts(" +
+                        "Id INT PRIMARY KEY IDENTITY(1,1), " +
+                        "Title NVARCHAR(100) NOT NULL, " +
+                        "Author NVARCHAR(50) NOT NULL, " +
+                        "PostedDate DATETIME NOT NULL, " +
+                        "Summary NVARCHAR(500) NOT NULL, " +
+                        "Content NVARCHAR(MAX) NOT NULL, " +
+                        "ImageUrl NVARCHAR(255) NULL, " +
+                        "Category NVARCHAR(50) NULL)", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    
+                    // Check if Comments table exists
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(
+                        "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Comments') " +
+                        "CREATE TABLE Comments(" +
+                        "Id INT PRIMARY KEY IDENTITY(1,1), " +
+                        "BlogPostId INT NOT NULL, " +
+                        "UserId INT NOT NULL, " +
+                        "Content NVARCHAR(2000) NOT NULL, " +
+                        "PostedAt DATETIME NOT NULL)", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    
+                    // Check if Users table exists
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(
+                        "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Users') " +
+                        "CREATE TABLE Users(" +
+                        "Id INT PRIMARY KEY IDENTITY(1,1), " +
+                        "Username NVARCHAR(50) NOT NULL UNIQUE, " +
+                        "Email NVARCHAR(100) NOT NULL UNIQUE, " +
+                        "PasswordHash NVARCHAR(MAX) NOT NULL, " +
+                        "IsAdmin BIT NOT NULL DEFAULT 0)", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    
+                    // Add the admin user if it doesn't exist
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(
+                        "IF NOT EXISTS (SELECT * FROM Users WHERE Username = 'admin') " +
+                        "INSERT INTO Users (Username, Email, PasswordHash, IsAdmin) " +
+                        "VALUES ('admin', 'admin@cybershield.com', 'AQAAAAEAACcQAAAAEKX9R+G+HjJ6sNBEVxMBrVeX6bTXyoTFLvYZO8vXDKnHhAaXZJM8+LcVv8K0bzRPjg==', 1)", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    
+                    // Add a sample blog post if none exist
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(
+                        "IF NOT EXISTS (SELECT * FROM BlogPosts) " +
+                        "INSERT INTO BlogPosts (Title, Author, PostedDate, Summary, Content, ImageUrl, Category) " +
+                        "VALUES ('Welcome to CyberShield', 'System', GETDATE(), " +
+                        "'This is a sample blog post created automatically when the database is initialized.', " +
+                        "'<p>Welcome to the CyberShield cybersecurity platform. This is a sample blog post created when the database was first initialized.</p>', " +
+                        "'/Content/img/blog/welcome.jpg', 'Announcement')", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                
+                var blogPosts = Db.BlogPosts
                     .OrderByDescending(p => p.PostedDate)
                     .ToList();
+
+                // If no blog posts exist yet, create sample posts
+                if (blogPosts.Count == 0)
+                {
+                    CreateSampleBlogPosts();
+                    blogPosts = Db.BlogPosts
+                        .OrderByDescending(p => p.PostedDate)
+                        .ToList();
+                }
+
+                var viewModels = blogPosts.Select(p => new BlogPostViewModel
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Author = p.Author,
+                    PostedDate = p.PostedDate,
+                    Summary = p.Summary,
+                    ImageUrl = p.ImageUrl,
+                    Category = p.Category,
+                    CommentCount = p.Comments.Count
+                }).ToList();
+
+                return View(viewModels);
             }
-
-            var viewModels = blogPosts.Select(p => new BlogPostViewModel
+            catch (Exception ex)
             {
-                Id = p.Id,
-                Title = p.Title,
-                Author = p.Author,
-                PostedDate = p.PostedDate,
-                Summary = p.Summary,
-                ImageUrl = p.ImageUrl,
-                Category = p.Category,
-                CommentCount = p.Comments.Count
-            }).ToList();
-
-            return View(viewModels);
+                // Log the error
+                System.Diagnostics.Debug.WriteLine($"Error in BlogController.Index: {ex.Message}");
+                
+                // Return an empty list as fallback
+                return View(new List<BlogPostViewModel>());
+            }
         }
 
         // GET: Blog/Post/5
         public ActionResult Post(int id)
         {
-            var post = _db.BlogPosts
-                .Include(p => p.Comments.Select(c => c.User))
-                .FirstOrDefault(p => p.Id == id);
-
-            if (post == null)
+            try
             {
+                // First try to get from database
+                BlogPostDetailViewModel viewModel = null;
+                bool foundInDb = false;
+                
+                try
+                {
+                    var post = Db.BlogPosts
+                        .Include(p => p.Comments.Select(c => c.User))
+                        .FirstOrDefault(p => p.Id == id);
+                    
+                    if (post != null)
+                    {
+                        var comments = post.Comments
+                            .OrderByDescending(c => c.PostedAt)
+                            .Select(c => new CommentViewModel
+                            {
+                                Id = c.Id,
+                                BlogPostId = c.BlogPostId,
+                                Username = c.User?.Username ?? "Unknown",
+                                Content = c.Content,
+                                PostedAt = c.PostedAt
+                            })
+                            .ToList();
+
+                        viewModel = new BlogPostDetailViewModel
+                        {
+                            Id = post.Id,
+                            Title = post.Title,
+                            Author = post.Author,
+                            PostedDate = post.PostedDate,
+                            Content = post.Content,
+                            ImageUrl = post.ImageUrl,
+                            Category = post.Category,
+                            Comments = comments,
+                            NewComment = new CreateCommentViewModel { BlogPostId = post.Id }
+                        };
+                        
+                        foundInDb = true;
+                    }
+                }
+                catch (Exception dbEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Database error in Post method: {dbEx.Message}");
+                    // Continue to in-memory fallback
+                }
+                
+                // If not found in database, try in-memory
+                if (!foundInDb)
+                {
+                    var post = InMemoryData.BlogPosts.FirstOrDefault(p => p.Id == id);
+                    if (post == null)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    
+                    // Get comments from in-memory data
+                    var comments = InMemoryData.Comments
+                        .Where(c => c.BlogPostId == id)
+                        .OrderByDescending(c => c.PostedAt)
+                        .Select(c => 
+                        {
+                            var user = InMemoryData.Users.FirstOrDefault(u => u.Id == c.UserId);
+                            return new CommentViewModel
+                            {
+                                Id = c.Id,
+                                BlogPostId = c.BlogPostId,
+                                Username = user?.Username ?? "Unknown",
+                                Content = c.Content,
+                                PostedAt = c.PostedAt
+                            };
+                        })
+                        .ToList();
+                    
+                    viewModel = new BlogPostDetailViewModel
+                    {
+                        Id = post.Id,
+                        Title = post.Title,
+                        Author = post.Author,
+                        PostedDate = post.PostedDate,
+                        Content = post.Content,
+                        ImageUrl = post.ImageUrl ?? "/Content/img/blog/default.jpg",
+                        Category = post.Category,
+                        Comments = comments,
+                        NewComment = new CreateCommentViewModel { BlogPostId = post.Id }
+                    };
+                }
+                
+                // Check if viewModel was assigned before returning
+                if (viewModel == null)
+                {
+                    return RedirectToAction("Index");
+                }
+                
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Unhandled error in Post method: {ex.Message}");
                 return RedirectToAction("Index");
             }
-
-            var comments = post.Comments
-                .OrderByDescending(c => c.PostedAt)
-                .Select(c => new CommentViewModel
-                {
-                    Id = c.Id,
-                    BlogPostId = c.BlogPostId,
-                    Username = c.User.Username,
-                    Content = c.Content,
-                    PostedAt = c.PostedAt
-                })
-                .ToList();
-
-            var viewModel = new BlogPostDetailViewModel
-            {
-                Id = post.Id,
-                Title = post.Title,
-                Author = post.Author,
-                PostedDate = post.PostedDate,
-                Content = post.Content,
-                ImageUrl = post.ImageUrl,
-                Category = post.Category,
-                Comments = comments,
-                NewComment = new CreateCommentViewModel { BlogPostId = post.Id }
-            };
-
-            return View(viewModel);
         }
 
         // POST: Blog/AddComment
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public ActionResult AddComment(CreateCommentViewModel model)
+        public ActionResult AddComment(int BlogPostId, string Content)
         {
             if (ModelState.IsValid)
             {
-                string username = User.Identity.Name;
-                var user = _db.Users.FirstOrDefault(u => u.Username == username);
-
-                if (user != null)
+                try
                 {
-                    var comment = new DomainBlog.Comment
+                    // Validate inputs
+                    if (string.IsNullOrEmpty(Content))
                     {
-                        BlogPostId = model.BlogPostId,
+                        ModelState.AddModelError("", "Comentariul nu poate fi gol.");
+                        return RedirectToAction("Post", new { id = BlogPostId });
+                    }
+                    
+                    string username = User.Identity.Name;
+                    var user = Db.Users.FirstOrDefault(u => u.Username == username);
+                    
+                    // If user not found in database, try in-memory
+                    if (user == null)
+                    {
+                        user = InMemoryData.Users.FirstOrDefault(u => u.Username == username);
+                        if (user == null)
+                        {
+                            // Create a minimal user object if not found anywhere
+                            user = new UserModel.User
+                            {
+                                Id = InMemoryData.Users.Any() ? InMemoryData.Users.Max(u => u.Id) + 1 : 1,
+                                Username = username,
+                                Email = username + "@example.com",
+                                IsAdmin = false
+                            };
+                            InMemoryData.Users.Add(user);
+                            System.Diagnostics.Debug.WriteLine($"Created temporary user for comment: {username}");
+                        }
+                    }
+
+                    var comment = new BlogModel.Comment
+                    {
+                        BlogPostId = BlogPostId,
                         UserId = user.Id,
-                        Content = model.Content,
-                        PostedAt = DateTime.Now
+                        Content = Content,
+                        PostedAt = DateTime.Now,
+                        User = user // Set the navigation property
                     };
 
-                    _db.Comments.Add((Comment)comment);
-                    _db.SaveChanges();
+                    // Try to save to database first
+                    bool savedToDb = false;
+                    try
+                    {
+                        Db.Comments.Add(comment);
+                        Db.SaveChanges();
+                        savedToDb = true;
+                        System.Diagnostics.Debug.WriteLine($"Comment saved to database for post {BlogPostId}");
+                    }
+                    catch (Exception dbEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error saving comment to database: {dbEx.Message}");
+                        // Continue to in-memory fallback
+                    }
+
+                    // If database save failed, add to in-memory
+                    if (!savedToDb)
+                    {
+                        // Assign an ID for the in-memory comment
+                        if (InMemoryData.Comments.Any())
+                        {
+                            comment.Id = InMemoryData.Comments.Max(c => c.Id) + 1;
+                        }
+                        else
+                        {
+                            comment.Id = 1;
+                        }
+                        
+                        InMemoryData.Comments.Add(comment);
+                        System.Diagnostics.Debug.WriteLine($"Comment saved to in-memory for post {BlogPostId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error in AddComment: {ex.Message}");
+                    ModelState.AddModelError("", "A apărut o eroare la adăugarea comentariului.");
+                    // Continue to render the form again
                 }
 
-                return RedirectToAction("Post", new { id = model.BlogPostId });
+                return RedirectToAction("Post", new { id = BlogPostId });
             }
 
-            // If we got this far, something failed, redisplay form
-            var post = _db.BlogPosts
-                .Include(p => p.Comments.Select(c => c.User))
-                .FirstOrDefault(p => p.Id == model.BlogPostId);
-
-            if (post == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            var comments = post.Comments
-                .OrderByDescending(c => c.PostedAt)
-                .Select(c => new CommentViewModel
-                {
-                    Id = c.Id,
-                    BlogPostId = c.BlogPostId,
-                    Username = c.User.Username,
-                    Content = c.Content,
-                    PostedAt = c.PostedAt
-                })
-                .ToList();
-
-            var viewModel = new BlogPostDetailViewModel
-            {
-                Id = post.Id,
-                Title = post.Title,
-                Author = post.Author,
-                PostedDate = post.PostedDate,
-                Content = post.Content,
-                ImageUrl = post.ImageUrl,
-                Category = post.Category,
-                Comments = comments,
-                NewComment = model
-            };
-
-            return View("Post", viewModel);
+            return RedirectToAction("Post", new { id = BlogPostId });
         }
 
         // Helper method to create sample blog posts
         private void CreateSampleBlogPosts()
         {
-            var samplePosts = new List<DomainBlog.BlogPost>
+            var samplePosts = new List<BlogModel.BlogPost>
             {
-                new DomainBlog.BlogPost
+                new BlogModel.BlogPost
                 {
                     Title = "Securitatea în era digitală: Ce trebuie să știți",
                     Author = "Ion Popescu",
@@ -175,7 +362,7 @@ namespace CyberShieldWeb.Controllers
                     ImageUrl = "/Content/img/blog/cybersecurity.jpg",
                     Category = "Securitate"
                 },
-                new DomainBlog.BlogPost
+                new BlogModel.BlogPost
                 {
                     Title = "Ingineria socială: Tehnici de manipulare psihologică în atacurile cibernetice",
                     Author = "Maria Ionescu",
@@ -200,7 +387,7 @@ namespace CyberShieldWeb.Controllers
                     ImageUrl = "/Content/img/blog/social-engineering.jpg",
                     Category = "Inginerie Socială"
                 },
-                new DomainBlog.BlogPost
+                new BlogModel.BlogPost
                 {
                     Title = "GDPR și securitatea datelor: Ce trebuie să știe fiecare afacere",
                     Author = "Alexandru Munteanu",
@@ -245,7 +432,7 @@ namespace CyberShieldWeb.Controllers
                     ImageUrl = "/Content/img/blog/gdpr.jpg",
                     Category = "Conformitate"
                 },
-                new DomainBlog.BlogPost
+                new BlogModel.BlogPost
                 {
                     Title = "Zero Trust: Viitorul arhitecturii de securitate",
                     Author = "Andrei Dumitrescu",
@@ -293,17 +480,73 @@ namespace CyberShieldWeb.Controllers
                 }
             };
 
-            _db.BlogPosts.AddRange((IEnumerable<BlogPost>)samplePosts);
-            _db.SaveChanges();
+            Db.BlogPosts.AddRange(samplePosts);
+            Db.SaveChanges();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _db != null)
             {
                 _db.Dispose();
             }
             base.Dispose(disposing);
+        }
+        
+        // Test method to add a comment directly
+        public ActionResult AddTestComment(int id)
+        {
+            try
+            {
+                var testUsername = "TestUser";
+                var testContent = "This is a test comment added at " + DateTime.Now.ToString();
+                
+                // Create a test user if it doesn't exist
+                var user = InMemoryData.Users.FirstOrDefault(u => u.Username == testUsername);
+                if (user == null)
+                {
+                    user = new UserModel.User
+                    {
+                        Id = InMemoryData.Users.Any() ? InMemoryData.Users.Max(u => u.Id) + 1 : 1,
+                        Username = testUsername,
+                        Email = testUsername + "@example.com",
+                        PasswordHash = "test",
+                        IsAdmin = false
+                    };
+                    InMemoryData.Users.Add(user);
+                }
+                
+                // Create and add the comment
+                var comment = new BlogModel.Comment
+                {
+                    BlogPostId = id,
+                    UserId = user.Id,
+                    Content = testContent,
+                    PostedAt = DateTime.Now,
+                    User = user
+                };
+                
+                // Assign an ID for the in-memory comment
+                if (InMemoryData.Comments.Any())
+                {
+                    comment.Id = InMemoryData.Comments.Max(c => c.Id) + 1;
+                }
+                else
+                {
+                    comment.Id = 1;
+                }
+                
+                InMemoryData.Comments.Add(comment);
+                System.Diagnostics.Debug.WriteLine($"Test comment added to post {id}: {testContent}");
+                
+                // Redirect to the post page
+                return RedirectToAction("Post", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AddTestComment: {ex.Message}");
+                return RedirectToAction("Index");
+            }
         }
     }
 } 

@@ -1,4 +1,4 @@
-@model IEnumerable<CyberShieldWeb.Models.Blog.BlogPost>
+@model IEnumerable<CyberShieldWeb.Models.Blog.BlogPostViewModel>
 @using System.Globalization
 
 @{
@@ -19,17 +19,16 @@
                             </div>
                         </div>
                         <div class="col-md-8">
-                            <div class="post-category">@post.Category</div>
-                            <h2 class="post-title">@post.Title</h2>
-                            <div class="post-meta">
-                                <span class="post-author">De @post.Author</span>
-                                <span class="post-date">@post.PostedDate.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("ro-RO"))</span>
-                            </div>
-                            <div class="post-summary">
-                                @post.Summary
-                            </div>
-                            <div class="post-link">
-                                @Html.ActionLink("Continuă citirea", "ArticleView", new { id = post.Id }, new { @class = "continue-reading" })
+                            <div class="card-body">
+                                <div class="post-category">@post.Category</div>
+                                <h3 class="post-title">@post.Title</h3>
+                                <div class="post-meta">
+                                    <span class="post-author">De @post.Author</span>
+                                    <span class="post-date">@post.PostedDate.ToString("d MMMM yyyy", new System.Globalization.CultureInfo("ro-RO"))</span>
+                                    <span class="post-comments">@post.CommentCount comentarii</span>
+                                </div>
+                                <p class="post-summary">@post.Summary</p>
+                                <a href="@Url.Action("Post", "Blog", new { id = post.Id })" class="read-more">Continuă citirea</a>
                             </div>
                         </div>
                     </div>
@@ -41,59 +40,49 @@
 
 @section Styles {
     <style>
-        .blog-container {
+        /* Blog styling */
+        .blog-section {
             padding: 4rem 0;
             background-color: var(--light-color);
         }
-
-        .blog-title {
-            font-family: 'Lato', sans-serif;
-            font-weight: 700;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: var(--dark-color);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .brand-text {
-            font-weight: 700;
-        }
-
-        .brand-shield {
-            color: var(--primary-color);
-        }
-
-        .blog-post {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        
+        .blog-filters {
             margin-bottom: 2rem;
-            padding: 2rem;
+        }
+        
+        .blog-post-card {
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            background-color: #fff;
             transition: transform 0.3s ease;
         }
-
-        .blog-post:hover {
+        
+        .blog-post-card:hover {
             transform: translateY(-5px);
         }
-
+        
         .post-image {
+            height: 100%;
             overflow: hidden;
-            border-radius: 6px;
         }
-
+        
         .post-image img {
             width: 100%;
-            height: 250px;
+            height: 100%;
             object-fit: cover;
             transition: transform 0.3s ease;
         }
-
-        .post-image img:hover {
+        
+        .blog-post-card:hover .post-image img {
             transform: scale(1.05);
         }
-
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
         .post-category {
             display: inline-block;
             background-color: var(--primary-color);
@@ -104,35 +93,36 @@
             margin-bottom: 1rem;
             font-family: 'Lato', sans-serif;
         }
-
+        
         .post-title {
             font-family: 'Lato', sans-serif;
             font-weight: 700;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 1rem;
             color: var(--dark-color);
         }
-
+        
         .post-meta {
             font-family: 'Lato', sans-serif;
             color: var(--gray-color);
             font-size: 0.9rem;
             margin-bottom: 1rem;
         }
-
+        
         .post-meta span:not(:last-child)::after {
             content: "·";
             margin: 0 0.5rem;
         }
-
+        
         .post-summary {
             font-family: 'Lato', sans-serif;
-            color: var(--dark-color);
-            margin-bottom: 1.5rem;
+            font-size: 1rem;
             line-height: 1.6;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
         }
-
-        .continue-reading {
+        
+        .read-more {
             font-family: 'Lato', sans-serif;
             color: var(--primary-color);
             text-decoration: none;
@@ -141,20 +131,41 @@
             align-items: center;
             transition: color 0.3s ease;
         }
-
-        .continue-reading:hover {
+        
+        .read-more:hover {
             color: var(--dark-color);
             text-decoration: none;
         }
-
-        .continue-reading::after {
+        
+        .read-more::after {
             content: "→";
             margin-left: 0.5rem;
             transition: transform 0.3s ease;
         }
-
-        .continue-reading:hover::after {
+        
+        .read-more:hover::after {
             transform: translateX(5px);
+        }
+        
+        .pagination {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pagination .page-item .page-link {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            margin: 0 0.2rem;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .pagination .page-item.disabled .page-link {
+            color: var(--gray-color);
         }
     </style>
 } 

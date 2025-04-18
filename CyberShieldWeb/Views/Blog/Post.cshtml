@@ -1,0 +1,238 @@
+@model CyberShieldWeb.Models.Blog.BlogPostDetailViewModel
+@using System.Globalization
+
+@{
+    ViewBag.Title = Model.Title + " - CyberShield";
+}
+
+<div class="blog-post-container">
+    <div class="container">
+        <article class="blog-post-full">
+            <div class="post-header">
+                <div class="post-category">@Model.Category</div>
+                <h1 class="post-title">@Model.Title</h1>
+                <div class="post-meta">
+                    <span class="post-author">De @Model.Author</span>
+                    <span class="post-date">@Model.PostedDate.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("ro-RO"))</span>
+                </div>
+            </div>
+
+            <div class="post-featured-image">
+                <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid" />
+            </div>
+
+            <div class="post-content">
+                @Html.Raw(Model.Content)
+            </div>
+        </article>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <h3>Comentarii (@Model.Comments.Count)</h3>
+            
+            <!-- Add Comment Form -->
+            @if (Request.IsAuthenticated)
+            {
+                using (Html.BeginForm("AddComment", "Blog", FormMethod.Post, new { @class = "comment-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="BlogPostId" value="@Model.Id" />
+                    
+                    <div class="form-group mb-3">
+                        <label for="Content" class="form-label">Comentariu</label>
+                        <textarea name="Content" id="Content" class="form-control" rows="3" placeholder="Lasă un comentariu..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Adaugă comentariu</button>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Trebuie să fii <a href="@Url.Action("Login", "Auth")">conectat</a> pentru a lăsa un comentariu.
+                </div>
+            }
+            
+            <!-- Comments List -->
+            <div class="comments-list mt-4">
+                @if (Model.Comments.Count > 0)
+                {
+                    foreach (var comment in Model.Comments)
+                    {
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <div class="comment-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="comment-info">
+                                    <h5 class="comment-author">@comment.Username</h5>
+                                    <span class="comment-date">@comment.PostedAt.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</span>
+                                </div>
+                            </div>
+                            <div class="comment-content">
+                                @comment.Content
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-comments">
+                        <p>Nu există comentarii încă. Fii primul care lasă un comentariu!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .blog-post-container {
+            padding: 4rem 0;
+            background-color: var(--light-color);
+        }
+
+        .blog-post-full {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .post-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .post-category {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .post-title {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .post-meta {
+            font-family: 'Lato', sans-serif;
+            color: var(--gray-color);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .post-meta span:not(:last-child)::after {
+            content: "·";
+            margin: 0 0.5rem;
+        }
+
+        .post-featured-image {
+            margin: -2rem -2rem 2rem -2rem;
+        }
+
+        .post-featured-image img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+        }
+
+        .post-content {
+            font-family: 'Lato', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--dark-color);
+        }
+
+        /* Comments Styles */
+        .comments-section {
+            margin-top: 3rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .comments-section h3 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--dark-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .comment-form {
+            margin-bottom: 2rem;
+        }
+
+        .comment-form label {
+            font-weight: 600;
+        }
+
+        .comment-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 1rem;
+        }
+
+        .comment-info {
+            flex: 1;
+        }
+
+        .comment-author {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .comment-date {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+        }
+
+        .comment-content {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-color);
+            font-style: italic;
+        }
+    </style>
+} 

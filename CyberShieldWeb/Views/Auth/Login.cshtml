@@ -1,5 +1,4 @@
 @model CyberShieldWeb.Models.Auth.LoginViewModel
-@using System.Web.Optimization
 
 @{
     ViewBag.Title = "Log in";
@@ -17,7 +16,10 @@
                     {
                         @Html.AntiForgeryToken()
                         <hr />
-                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        
+                        <div class="validation-summary-errors text-danger">
+                            @Html.ValidationSummary(false)
+                        </div>
                         
                         <div class="form-group mb-3">
                             @Html.LabelFor(m => m.Username, new { @class = "control-label" })
@@ -49,8 +51,4 @@
             </div>
         </div>
     </div>
-</div>
-
-@section scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-} 
+</div> 

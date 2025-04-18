@@ -1,0 +1,202 @@
+@model CyberShieldWeb.Models.SpecialistDashboardViewModel
+@using System.Globalization
+
+@{
+    ViewBag.Title = "Dashboard Specialist - CyberShield";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2>Dashboard Specialist</h2>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                
+                    <h3>Bine ai venit, @Model.Username!</h3>
+                    <p class="lead">Acesta este panoul de control pentru specialiști.</p>
+                    <hr />
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h4>Informații Cont</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Username:</strong> @Model.Username</p>
+                                    <p><strong>Email:</strong> @Model.Email</p>
+                                    <p><strong>Rol:</strong> <span class="badge bg-primary">Specialist</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h4>Acțiuni rapide</h4>
+                                </div>
+                                <div class="card-body">
+                                    <a href="@Url.Action("CreateBlogPost", "Specialist")" class="btn btn-success mb-2 w-100">
+                                        <i class="fas fa-pen me-2"></i> Creează un articol nou
+                                    </a>
+                                    <a href="@Url.Action("Index", "Blog")" class="btn btn-info mb-2 w-100">
+                                        <i class="fas fa-list me-2"></i> Vezi toate articolele
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Programările în așteptare -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning">
+                            <h4 class="mb-0">Programări în așteptare (@Model.Appointments.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Appointments.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nume</th>
+                                                <th>Email</th>
+                                                <th>Telefon</th>
+                                                <th>Serviciu</th>
+                                                <th>Data solicitată</th>
+                                                <th>Mesaj</th>
+                                                <th>Acțiuni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var appointment in Model.Appointments)
+                                            {
+                                                <tr>
+                                                    <td>@appointment.Name</td>
+                                                    <td>@appointment.Email</td>
+                                                    <td>@appointment.Phone</td>
+                                                    <td>@appointment.ServiceType</td>
+                                                    <td>@appointment.PreferredDate.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(appointment.Message))
+                                                        {
+                                                            if (appointment.Message.Length > 50)
+                                                            {
+                                                                <span title="@appointment.Message">@appointment.Message.Substring(0, 50)...</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                @appointment.Message
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Fără mesaj</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            @using (Html.BeginForm("AcceptAppointment", "Specialist", FormMethod.Post, new { style = "display:inline;" }))
+                                                            {
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="id" value="@appointment.Id" />
+                                                                <button type="submit" class="btn btn-sm btn-success me-1" onclick="return confirm('Confirmați acceptarea consultației?');">
+                                                                    <i class="fas fa-check"></i> Acceptă
+                                                                </button>
+                                                            }
+                                                            
+                                                            @using (Html.BeginForm("CancelAppointment", "Specialist", FormMethod.Post, new { style = "display:inline;" }))
+                                                            {
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="id" value="@appointment.Id" />
+                                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Sigur doriți să anulați consultația?');">
+                                                                    <i class="fas fa-times"></i> Anulează
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu există programări în așteptare în acest moment.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- Articolele tale -->
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0">Articolele tale (@Model.BlogPosts.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.BlogPosts.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Titlu</th>
+                                                <th>Categorie</th>
+                                                <th>Data publicării</th>
+                                                <th>Comentarii</th>
+                                                <th>Acțiuni</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var post in Model.BlogPosts)
+                                            {
+                                                <tr>
+                                                    <td>@post.Title</td>
+                                                    <td>@post.Category</td>
+                                                    <td>@post.PostedDate.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>@post.CommentCount</td>
+                                                    <td>
+                                                        <a href="@Url.Action("Post", "Blog", new { id = post.Id })" class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-eye"></i> Vizualizează
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu ai publicat încă niciun articol. <a href="@Url.Action("CreateBlogPost", "Specialist")">Creează primul tău articol</a>!</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Logout", "Auth")" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

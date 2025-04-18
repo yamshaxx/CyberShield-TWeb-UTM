@@ -39,6 +39,25 @@
                         </a>
                     </li>
                 }
+                
+                @{
+                    bool isSpecialist = false;
+                    if (User.Identity.IsAuthenticated)
+                    {
+                        var db = new CyberShield.Domain.Data.CyberShieldContext();
+                        var user = db.Users.FirstOrDefault(u => u.Username == User.Identity.Name);
+                        isSpecialist = user != null && user.IsSpecialist;
+                    }
+                }
+                
+                @if (isSpecialist)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-info" href="@Url.Action("Dashboard", "Specialist")">
+                            <i class="fas fa-user-md"></i> Specialist
+                        </a>
+                    </li>
+                }
             </ul>
             <ul class="navbar-nav">
                 @if (User.Identity.IsAuthenticated)
@@ -49,6 +68,10 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="@Url.Action("Dashboard", "Home")">Dashboard</a></li>
+                            @if (isSpecialist)
+                            {
+                                <li><a class="dropdown-item" href="@Url.Action("Dashboard", "Specialist")">Dashboard Specialist</a></li>
+                            }
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="@Url.Action("Logout", "Auth")">Logout</a></li>
                         </ul>
