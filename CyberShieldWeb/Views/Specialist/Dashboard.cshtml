@@ -146,6 +146,71 @@
                         </div>
                     </div>
                     
+                    <!-- Consultații confirmate -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Consultații confirmate (@Model.ConfirmedAppointments.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.ConfirmedAppointments.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nume</th>
+                                                <th>Email</th>
+                                                <th>Telefon</th>
+                                                <th>Serviciu</th>
+                                                <th>Data programată</th>
+                                                <th>Mesaj</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var appointment in Model.ConfirmedAppointments)
+                                            {
+                                                <tr>
+                                                    <td>@appointment.Name</td>
+                                                    <td>@appointment.Email</td>
+                                                    <td>@appointment.Phone</td>
+                                                    <td>@appointment.ServiceType</td>
+                                                    <td>@appointment.PreferredDate.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(appointment.Message))
+                                                        {
+                                                            if (appointment.Message.Length > 50)
+                                                            {
+                                                                <span title="@appointment.Message">@appointment.Message.Substring(0, 50)...</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                @appointment.Message
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Fără mesaj</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-success">Confirmată</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu există consultații confirmate în acest moment.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
                     <!-- Articolele tale -->
                     <div class="card">
                         <div class="card-header bg-info text-white">

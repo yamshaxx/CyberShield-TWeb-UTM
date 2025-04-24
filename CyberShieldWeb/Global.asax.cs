@@ -174,9 +174,14 @@ namespace CyberShieldWeb
 
                     // Set the context user
                     Context.User = userPrincipal;
+                    
+                    // Debug output
+                    System.Diagnostics.Debug.WriteLine($"User authenticated: {authTicket.Name}, Role: {authTicket.UserData}");
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // Log the error
+                    System.Diagnostics.Debug.WriteLine($"Authentication error: {ex.Message}");
                     // In case of any error, don't set the principal
                 }
             }

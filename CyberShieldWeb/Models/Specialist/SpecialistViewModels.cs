@@ -10,6 +10,14 @@ namespace CyberShieldWeb.Models
         public string Email { get; set; }
         public IList<SpecialistBlogViewModel> BlogPosts { get; set; }
         public IList<AppointmentViewModel> Appointments { get; set; }
+        public IList<AppointmentViewModel> ConfirmedAppointments { get; set; }
+        
+        public SpecialistDashboardViewModel()
+        {
+            BlogPosts = new List<SpecialistBlogViewModel>();
+            Appointments = new List<AppointmentViewModel>();
+            ConfirmedAppointments = new List<AppointmentViewModel>();
+        }
     }
 
     public class SpecialistBlogViewModel

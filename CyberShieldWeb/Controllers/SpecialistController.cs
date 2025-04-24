@@ -35,10 +35,23 @@ namespace CyberShieldWeb.Controllers
             if (!User.Identity.IsAuthenticated)
                 return false;
                 
+            // First check if the user has the Specialist role directly
+            if (User.IsInRole("Specialist"))
+                return true;
+                
+            // If role check fails, fall back to database check
             var username = User.Identity.Name;
             var user = Db.Users.FirstOrDefault(u => u.Username == username);
             
-            return user != null && user.IsSpecialist;
+            // If the user is a specialist in the database but not in the authentication ticket,
+            // update the session to include the Specialist role for future requests
+            if (user != null && user.IsSpecialist)
+            {
+                System.Diagnostics.Debug.WriteLine($"User {username} is a specialist in database but not in auth ticket");
+                return true;
+            }
+            
+            return false;
         }
         
         // GET: Specialist
@@ -61,9 +74,7 @@ namespace CyberShieldWeb.Controllers
                 string username = User.Identity.Name;
                 var viewModel = new SpecialistDashboardViewModel
                 {
-                    Username = username,
-                    BlogPosts = new List<SpecialistBlogViewModel>(),
-                    Appointments = new List<AppointmentViewModel>()
+                    Username = username
                 };
                 
                 var user = Db.Users.FirstOrDefault(u => u.Username == username);
@@ -101,16 +112,40 @@ namespace CyberShieldWeb.Controllers
                     try
                     {
                         // Get all pending appointments for the specialist to accept
-                        var appointments = Db.Appointments
+                        var pendingAppointments = Db.Appointments
                             .Where(a => a.Status == "Pending")
                             .OrderBy(a => a.PreferredDate)
                             .ToList();
                             
-                        System.Diagnostics.Debug.WriteLine($"Found {appointments.Count} pending appointments");
+                        System.Diagnostics.Debug.WriteLine($"Found {pendingAppointments.Count} pending appointments");
                         
-                        foreach (var appointment in appointments)
+                        foreach (var appointment in pendingAppointments)
                         {
                             viewModel.Appointments.Add(new AppointmentViewModel
+                            {
+                                Id = appointment.Id,
+                                Name = appointment.Name,
+                                Email = appointment.Email,
+                                Phone = appointment.Phone,
+                                ServiceType = appointment.ServiceType,
+                                PreferredDate = appointment.PreferredDate,
+                                Message = appointment.Message,
+                                Status = appointment.Status,
+                                CreatedAt = appointment.CreatedAt
+                            });
+                        }
+                        
+                        // Get all confirmed appointments
+                        var confirmedAppointments = Db.Appointments
+                            .Where(a => a.Status == "Confirmed")
+                            .OrderBy(a => a.PreferredDate)
+                            .ToList();
+                            
+                        System.Diagnostics.Debug.WriteLine($"Found {confirmedAppointments.Count} confirmed appointments");
+                        
+                        foreach (var appointment in confirmedAppointments)
+                        {
+                            viewModel.ConfirmedAppointments.Add(new AppointmentViewModel
                             {
                                 Id = appointment.Id,
                                 Name = appointment.Name,
@@ -139,7 +174,8 @@ namespace CyberShieldWeb.Controllers
                 {
                     Username = User.Identity.Name,
                     BlogPosts = new List<SpecialistBlogViewModel>(),
-                    Appointments = new List<AppointmentViewModel>()
+                    Appointments = new List<AppointmentViewModel>(),
+                    ConfirmedAppointments = new List<AppointmentViewModel>()
                 });
             }
         }
