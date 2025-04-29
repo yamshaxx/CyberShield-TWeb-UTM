@@ -14,14 +14,33 @@ namespace CyberShield.BusinessLogic
     {
         private readonly IAuth _authBL;
         private readonly INetworkPentestService _networkPentestService;
+        private readonly IBlogService _blogService;
+        private readonly IUserService _userService;
+        private readonly IAppointmentService _appointmentService;
+        private readonly IAdminService _adminService;
+        private readonly IValidationService _validationService;
+        private readonly IErrorHandlingService _errorHandlingService;
 
         public BusinessLogic()
         {
+            _errorHandlingService = new ErrorHandlingService();
+            _validationService = new ValidationService();
+            _authBL = new BL_Struct.AuthBL(_errorHandlingService);
+            _blogService = new BlogService(_errorHandlingService, _validationService);
+            _userService = new UserService(_errorHandlingService);
+            _appointmentService = new AppointmentService(_errorHandlingService, _validationService);
+            _adminService = new AdminService(_errorHandlingService, _authBL);
         }
 
         public BusinessLogic(INetworkPentestRepository networkPentestRepository, IClientRepository clientRepository)
         {
-            _authBL = new AuthBL();
+            _errorHandlingService = new ErrorHandlingService();
+            _validationService = new ValidationService();
+            _authBL = new BL_Struct.AuthBL(_errorHandlingService);
+            _blogService = new BlogService(_errorHandlingService, _validationService);
+            _userService = new UserService(_errorHandlingService);
+            _appointmentService = new AppointmentService(_errorHandlingService, _validationService);
+            _adminService = new AdminService(_errorHandlingService, _authBL);
             _networkPentestService = new NetworkPentestService(clientRepository, networkPentestRepository);
         }
 
@@ -33,6 +52,36 @@ namespace CyberShield.BusinessLogic
         public INetworkPentestService GetNetworkPentestService()
         {
             return _networkPentestService;
+        }
+        
+        public IBlogService GetBlogService()
+        {
+            return _blogService;
+        }
+        
+        public IUserService GetUserService()
+        {
+            return _userService;
+        }
+        
+        public IAppointmentService GetAppointmentService()
+        {
+            return _appointmentService;
+        }
+        
+        public IAdminService GetAdminService()
+        {
+            return _adminService;
+        }
+        
+        public IValidationService GetValidationService()
+        {
+            return _validationService;
+        }
+        
+        public IErrorHandlingService GetErrorHandlingService()
+        {
+            return _errorHandlingService;
         }
     }
 }
