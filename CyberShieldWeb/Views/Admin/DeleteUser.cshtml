@@ -1,0 +1,59 @@
+@model CyberShield.Domain.Model.User
+
+@{
+    ViewBag.Title = "Delete User";
+}
+
+<div class="container mt-4">
+    <h1>Delete User</h1>
+    <hr />
+
+    <div class="mb-3">
+        <a href="@Url.Action("Users", "Admin")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Confirm Deletion</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Are you sure you want to delete this user?
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">User Details</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Username</dt>
+                        <dd class="col-sm-9">@Model.Username</dd>
+
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9">@Model.Email</dd>
+
+                        <dt class="col-sm-3">Admin Status</dt>
+                        <dd class="col-sm-9">@(Model.IsAdmin ? "Administrator" : "Regular User")</dd>
+
+                        <dt class="col-sm-3">Registration Date</dt>
+                        <dd class="col-sm-9">@Model.RegistrationDate.ToString("yyyy-MM-dd HH:mm")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            @using (Html.BeginForm("DeleteUser", "Admin", new { id = Model.Id }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete User
+                    </button>
+                    <a href="@Url.Action("Users", "Admin")" class="btn btn-secondary">Cancel</a>
+                </div>
+            }
+        </div>
+    </div>
+</div> 
