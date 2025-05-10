@@ -11,6 +11,9 @@ namespace CyberShieldWeb
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
+            // Enable attribute routing
+            routes.MapMvcAttributeRoutes();
+            
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             // Ruta specifică pentru pagina principală - trebuie să fie prima
@@ -50,6 +53,19 @@ namespace CyberShieldWeb
                 name: "ConformitateGDPR",
                 url: "servicii/conformitate-gdpr",
                 defaults: new { controller = "Servicii", action = "ConformitateGDPR" }
+            );
+            
+            // Rute pentru pagina de contact - două rute diferite pentru redundanță
+            routes.MapRoute(
+                name: "Contact",
+                url: "contact",
+                defaults: new { controller = "Contact", action = "Index" }
+            );
+
+            routes.MapRoute(
+                name: "ContactUs",
+                url: "contactus",
+                defaults: new { controller = "Contact", action = "Index" }
             );
 
             // Ruta implicită - trebuie să fie ultima

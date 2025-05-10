@@ -7,29 +7,29 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Acas&#259;</a>
+                    <a class="nav-link" href="@Url.Action("Index", "Home")">Acas&#259;</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/despre">Despre Noi</a>
+                    <a class="nav-link" href="@Url.Action("Index", "Despre")">Despre Noi</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Servicii
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
-                        <li><a class="dropdown-item" href="/servicii/consultanta">Consultanta</a></li>
-                        <li><a class="dropdown-item" href="/servicii/testarea-penetrarii">Testarea penetrarii</a></li>
-                        <li><a class="dropdown-item" href="/servicii/inginerie-sociala">Inginerie sociala</a></li>
-                        <li><a class="dropdown-item" href="/servicii/conformitate-gdpr">Conformitate cu GDPR</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Consultanta", "Servicii")">Consultanta</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("TestareaPenetrarii", "Servicii")">Testarea penetrarii</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("InginerieSociala", "Servicii")">Inginerie sociala</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("ConformitateGDPR", "Servicii")">Conformitate cu GDPR</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/servicii">Toate serviciile</a></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Index", "Servicii")">Toate serviciile</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/blog">Blog</a>
+                    <a class="nav-link" href="@Url.Action("Index", "Blog")">Blog</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/contact">Contact</a>
+                    <a class="nav-link" href="@Url.Action("Index", "Contact")">Contact</a>
                 </li>
                 @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                 {

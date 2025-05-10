@@ -28,7 +28,7 @@ namespace CyberShield.BusinessLogic
         {
             try
             {
-                if (string.IsNullOrEmpty(userData.UserName) || string.IsNullOrEmpty(userData.Password))
+            if (string.IsNullOrEmpty(userData.UserName) || string.IsNullOrEmpty(userData.Password))
                 {
                     return "Invalid credentials";
                 }

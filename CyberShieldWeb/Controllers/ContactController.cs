@@ -6,9 +6,11 @@ using System.Web.Mvc;
 
 namespace CyberShieldWeb.Controllers
 {
+    [RoutePrefix("contact")]
     public class ContactController : Controller
     {
         // GET: Contact
+        [Route("")]
         public ActionResult Index()
         {
             return View();
