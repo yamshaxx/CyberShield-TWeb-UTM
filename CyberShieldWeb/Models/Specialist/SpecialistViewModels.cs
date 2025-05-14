@@ -11,12 +11,16 @@ namespace CyberShieldWeb.Models
         public IList<SpecialistBlogViewModel> BlogPosts { get; set; }
         public IList<AppointmentViewModel> Appointments { get; set; }
         public IList<AppointmentViewModel> ConfirmedAppointments { get; set; }
+        public IList<AppointmentViewModel> CancelledAppointments { get; set; }
+        public IList<ContactMessageViewModel> ContactMessages { get; set; }
         
         public SpecialistDashboardViewModel()
         {
             BlogPosts = new List<SpecialistBlogViewModel>();
             Appointments = new List<AppointmentViewModel>();
             ConfirmedAppointments = new List<AppointmentViewModel>();
+            CancelledAppointments = new List<AppointmentViewModel>();
+            ContactMessages = new List<ContactMessageViewModel>();
         }
     }
 
@@ -41,6 +45,17 @@ namespace CyberShieldWeb.Models
         public string Message { get; set; }
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class ContactMessageViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Subject { get; set; }
+        public string Message { get; set; }
+        public DateTime SentDate { get; set; }
+        public bool IsRead { get; set; }
     }
 
     public class CreateBlogPostViewModel

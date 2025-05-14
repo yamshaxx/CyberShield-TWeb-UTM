@@ -76,6 +76,7 @@
     <Compile Include="Model\Blog\BlogPost.cs" />
     <Compile Include="Model\Blog\Comment.cs" />
     <Compile Include="Model\Client\ClientDTO.cs" />
+    <Compile Include="Model\ContactMessage.cs" />
     <Compile Include="Model\PenetrationTesting\NetworkPentestRequestDTO.cs" />
     <Compile Include="Model\User\User.cs" />
     <Compile Include="Model\User\UserLoginDTO.cs" />

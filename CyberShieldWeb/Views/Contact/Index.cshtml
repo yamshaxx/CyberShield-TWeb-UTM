@@ -88,7 +88,7 @@
                         
                         <div class="col-md-6">
                             <h2 class="h4 mb-3">Trimiteți-ne un mesaj</h2>
-                            @using (Html.BeginForm("SendMessage", "Contact", FormMethod.Post, new { @class = "contact-form" }))
+                            @using (Html.BeginForm("SendMessage", "Home", FormMethod.Post, new { @class = "contact-form" }))
                             {
                                 @Html.AntiForgeryToken()
                                 <div class="mb-3">

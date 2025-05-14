@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Configuration;
 using System.Linq;
+using CyberShield.Domain.Model;
 
 namespace CyberShield.Domain.Data
 {
@@ -361,6 +362,24 @@ namespace CyberShield.Domain.Data
                     System.Diagnostics.Debug.WriteLine($"Create Appointments table result: {result}");
                 }
                 
+                // Create ContactMessages table if it doesn't exist
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ContactMessages')
+                        CREATE TABLE ContactMessages(
+                            Id INT PRIMARY KEY IDENTITY(1,1),
+                            Name NVARCHAR(100) NOT NULL,
+                            Email NVARCHAR(100) NOT NULL,
+                            Subject NVARCHAR(200) NOT NULL,
+                            Message NVARCHAR(2000) NOT NULL,
+                            SentDate DATETIME NOT NULL,
+                            IsRead BIT NOT NULL DEFAULT 0
+                        )";
+                    int result = cmd.ExecuteNonQuery();
+                    System.Diagnostics.Debug.WriteLine($"Create ContactMessages table result: {result}");
+                }
+                
                 // Add foreign keys for Comments table after making sure both parent tables exist
                 try 
                 {
@@ -486,6 +505,7 @@ namespace CyberShield.Domain.Data
         public DbSet<BlogModel.BlogPost> BlogPosts { get; set; }
         public DbSet<BlogModel.Comment> Comments { get; set; }
         public DbSet<BlogModel.Appointment> Appointments { get; set; }
+        public DbSet<CyberShield.Domain.Model.ContactMessage> ContactMessages { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -504,6 +524,7 @@ namespace CyberShield.Domain.Data
             modelBuilder.Entity<UserModel.User>().ToTable("Users");
             modelBuilder.Entity<BlogModel.BlogPost>().ToTable("BlogPosts");
             modelBuilder.Entity<BlogModel.Comment>().ToTable("Comments");
+            modelBuilder.Entity<CyberShield.Domain.Model.ContactMessage>().ToTable("ContactMessages");
                 
             // Explicitly ignore the Data namespace versions
             modelBuilder.Ignore<BlogPost>();

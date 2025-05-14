@@ -166,6 +166,65 @@
                             }
                         </div>
                     </div>
+                    
+                    <!-- Mesajele tale -->
+                    <div class="card mb-4 mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Mesajele tale trimise (@Model.SentMessages.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.SentMessages.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Subiect</th>
+                                                <th>Mesaj</th>
+                                                <th>Data trimiterii</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var message in Model.SentMessages)
+                                            {
+                                                <tr>
+                                                    <td>@message.Subject</td>
+                                                    <td>
+                                                        @if (message.Message.Length > 50)
+                                                        {
+                                                            <span title="@message.Message">@message.Message.Substring(0, 50)...</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            @message.Message
+                                                        }
+                                                    </td>
+                                                    <td>@message.SentDate.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>
+                                                        @if (message.IsRead)
+                                                        {
+                                                            <span class="badge bg-success">Citit</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning text-dark">Necitit</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu ai trimis niciun mesaj. Folosește <a href="@Url.Action("Contact", "Home")">formularul de contact</a> pentru a trimite un mesaj!</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <a href="@Url.Action("Logout", "Auth")" class="btn btn-danger">Logout</a>

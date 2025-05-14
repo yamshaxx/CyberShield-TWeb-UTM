@@ -34,6 +34,46 @@ namespace CyberShieldWeb.Controllers
             return View();
         }
 
+        // GET: Contact functionality added to Home controller for "Contactati-ne"
+        public ActionResult Contact()
+        {
+            // Render the Contact/Index view from the Contact folder
+            return View("~/Views/Contact/Index.cshtml");
+        }
+        
+        // POST: Home/SendMessage (for contact form submission)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SendMessage(string name, string email, string subject, string message)
+        {
+            try
+            {
+                // Store the message in the database
+                var contactMessage = new CyberShield.Domain.Model.ContactMessage
+                {
+                    Name = name,
+                    Email = email,
+                    Subject = subject,
+                    Message = message,
+                    SentDate = DateTime.Now,
+                    IsRead = false
+                };
+                
+                Db.ContactMessages.Add(contactMessage);
+                Db.SaveChanges();
+                
+                // Set success message
+                TempData["SuccessMessage"] = "Mesajul dumneavoastră a fost trimis cu succes. Vă vom contacta în curând.";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving contact message: {ex.Message}");
+                // Continue without error to user - we don't want to show database issues to users
+            }
+            
+            return RedirectToAction("Contact");
+        }
+
         // GET: Dashboard
         [Authorize]
         public ActionResult Dashboard()
@@ -43,9 +83,7 @@ namespace CyberShieldWeb.Controllers
                 string username = User.Identity.Name;
                 var viewModel = new UserDashboardViewModel
                 {
-                    Username = username,
-                    Comments = new List<UserCommentViewModel>(),
-                    Appointments = new List<UserAppointmentViewModel>()
+                    Username = username
                 };
                 
                 // Try to find user in the database
@@ -116,6 +154,34 @@ namespace CyberShieldWeb.Controllers
                             // Now try to load in-memory appointments
                             LoadInMemoryAppointments(user.Id, viewModel);
                         }
+                        
+                        try
+                        {
+                            // Get user's sent messages
+                            var contactMessages = Db.ContactMessages
+                                .Where(m => m.Email == user.Email)
+                                .OrderByDescending(m => m.SentDate)
+                                .ToList();
+                                
+                            System.Diagnostics.Debug.WriteLine($"Found {contactMessages.Count} contact messages for user {user.Username} (Email: {user.Email})");
+                            
+                            foreach (var message in contactMessages)
+                            {
+                                viewModel.SentMessages.Add(new UserContactMessageViewModel
+                                {
+                                    Id = message.Id,
+                                    Subject = message.Subject,
+                                    Message = message.Message,
+                                    SentDate = message.SentDate,
+                                    IsRead = message.IsRead
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error loading contact messages: {ex.Message}");
+                            // Continue without messages if there's an error
+                        }
                     }
                 }
                 catch (Exception dbEx)
@@ -162,6 +228,9 @@ namespace CyberShieldWeb.Controllers
                         
                         // Load in-memory appointments
                         LoadInMemoryAppointments(user.Id, viewModel);
+                        
+                        // Load in-memory contact messages
+                        LoadInMemoryContactMessages(user.Email, viewModel);
                     }
                 }
                 
@@ -172,9 +241,7 @@ namespace CyberShieldWeb.Controllers
                 System.Diagnostics.Debug.WriteLine($"Error in Dashboard: {ex.Message}");
                 return View(new UserDashboardViewModel
                 {
-                    Username = User.Identity.Name,
-                    Comments = new List<UserCommentViewModel>(),
-                    Appointments = new List<UserAppointmentViewModel>()
+                    Username = User.Identity.Name
                 });
             }
         }
@@ -208,6 +275,29 @@ namespace CyberShieldWeb.Controllers
                     PreferredDate = appointment.PreferredDate,
                     Status = appointment.Status,
                     CreatedAt = appointment.CreatedAt
+                });
+            }
+        }
+        
+        private void LoadInMemoryContactMessages(string userEmail, UserDashboardViewModel viewModel)
+        {
+            // Get user's contact messages from in-memory
+            var memoryMessages = InMemoryData.ContactMessages
+                .Where(m => m.Email == userEmail)
+                .OrderByDescending(m => m.SentDate)
+                .ToList();
+            
+            System.Diagnostics.Debug.WriteLine($"Found {memoryMessages.Count} contact messages in memory for user with email: {userEmail}");
+            
+            foreach (var message in memoryMessages)
+            {
+                viewModel.SentMessages.Add(new UserContactMessageViewModel
+                {
+                    Id = message.Id,
+                    Subject = message.Subject,
+                    Message = message.Message,
+                    SentDate = message.SentDate,
+                    IsRead = message.IsRead
                 });
             }
         }

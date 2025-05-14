@@ -211,6 +211,141 @@
                         </div>
                     </div>
                     
+                    <!-- Consultații anulate -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h4 class="mb-0">Consultații anulate (@Model.CancelledAppointments.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.CancelledAppointments.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nume</th>
+                                                <th>Email</th>
+                                                <th>Telefon</th>
+                                                <th>Serviciu</th>
+                                                <th>Data programată</th>
+                                                <th>Mesaj</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var appointment in Model.CancelledAppointments)
+                                            {
+                                                <tr>
+                                                    <td>@appointment.Name</td>
+                                                    <td>@appointment.Email</td>
+                                                    <td>@appointment.Phone</td>
+                                                    <td>@appointment.ServiceType</td>
+                                                    <td>@appointment.PreferredDate.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(appointment.Message))
+                                                        {
+                                                            if (appointment.Message.Length > 50)
+                                                            {
+                                                                <span title="@appointment.Message">@appointment.Message.Substring(0, 50)...</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                @appointment.Message
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Fără mesaj</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu există consultații anulate în acest moment.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- Mesaje de contact -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">Mesaje de Contact (@Model.ContactMessages.Count)</h4>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.ContactMessages.Count > 0)
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Nume</th>
+                                                <th>Email</th>
+                                                <th>Subiect</th>
+                                                <th>Mesaj</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var message in Model.ContactMessages)
+                                            {
+                                                <tr class="@(message.IsRead ? "" : "table-info")">
+                                                    <td>@message.SentDate.ToString("d MMMM yyyy HH:mm", CultureInfo.GetCultureInfo("ro-RO"))</td>
+                                                    <td>@message.Name</td>
+                                                    <td>@message.Email</td>
+                                                    <td>@message.Subject</td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(message.Message))
+                                                        {
+                                                            if (message.Message.Length > 50)
+                                                            {
+                                                                <span title="@message.Message">@message.Message.Substring(0, 50)...</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                @message.Message
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (message.IsRead)
+                                                        {
+                                                            <span class="badge bg-success">Citit</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning text-dark">Necitit</span>
+                                                            using (Html.BeginForm("MarkContactMessageAsRead", "Specialist", FormMethod.Post, new { style = "display:inline;" }))
+                                                            {
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="id" value="@message.Id" />
+                                                                <button type="submit" class="btn btn-sm btn-outline-success ms-2">
+                                                                    <i class="fas fa-check"></i> Marchează ca citit
+                                                                </button>
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <p class="mb-0">Nu există mesaje de contact în acest moment.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
                     <!-- Articolele tale -->
                     <div class="card">
                         <div class="card-header bg-info text-white">

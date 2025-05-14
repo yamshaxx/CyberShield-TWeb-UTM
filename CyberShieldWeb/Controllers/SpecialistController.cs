@@ -158,6 +158,51 @@ namespace CyberShieldWeb.Controllers
                                 CreatedAt = appointment.CreatedAt
                             });
                         }
+                        
+                        // Get all cancelled appointments
+                        var cancelledAppointments = Db.Appointments
+                            .Where(a => a.Status == "Cancelled")
+                            .OrderByDescending(a => a.PreferredDate)
+                            .ToList();
+                            
+                        System.Diagnostics.Debug.WriteLine($"Found {cancelledAppointments.Count} cancelled appointments");
+                        
+                        foreach (var appointment in cancelledAppointments)
+                        {
+                            viewModel.CancelledAppointments.Add(new AppointmentViewModel
+                            {
+                                Id = appointment.Id,
+                                Name = appointment.Name,
+                                Email = appointment.Email,
+                                Phone = appointment.Phone,
+                                ServiceType = appointment.ServiceType,
+                                PreferredDate = appointment.PreferredDate,
+                                Message = appointment.Message,
+                                Status = appointment.Status,
+                                CreatedAt = appointment.CreatedAt
+                            });
+                        }
+                        
+                        // Get contact messages
+                        var contactMessages = Db.ContactMessages
+                            .OrderByDescending(c => c.SentDate)
+                            .ToList();
+                            
+                        System.Diagnostics.Debug.WriteLine($"Found {contactMessages.Count} contact messages");
+                        
+                        foreach (var message in contactMessages)
+                        {
+                            viewModel.ContactMessages.Add(new ContactMessageViewModel
+                            {
+                                Id = message.Id,
+                                Name = message.Name,
+                                Email = message.Email,
+                                Subject = message.Subject,
+                                Message = message.Message,
+                                SentDate = message.SentDate,
+                                IsRead = message.IsRead
+                            });
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -175,7 +220,9 @@ namespace CyberShieldWeb.Controllers
                     Username = User.Identity.Name,
                     BlogPosts = new List<SpecialistBlogViewModel>(),
                     Appointments = new List<AppointmentViewModel>(),
-                    ConfirmedAppointments = new List<AppointmentViewModel>()
+                    ConfirmedAppointments = new List<AppointmentViewModel>(),
+                    CancelledAppointments = new List<AppointmentViewModel>(),
+                    ContactMessages = new List<ContactMessageViewModel>()
                 });
             }
         }
@@ -288,6 +335,38 @@ namespace CyberShieldWeb.Controllers
             {
                 System.Diagnostics.Debug.WriteLine($"Error cancelling appointment: {ex.Message}");
                 TempData["ErrorMessage"] = "A apărut o eroare la anularea consultației.";
+            }
+            
+            return RedirectToAction("Dashboard");
+        }
+        
+        // POST: Specialist/MarkContactMessageAsRead
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult MarkContactMessageAsRead(int id)
+        {
+            if (!IsSpecialist())
+                return RedirectToAction("Login", "Auth");
+                
+            try
+            {
+                var message = Db.ContactMessages.Find(id);
+                if (message != null)
+                {
+                    message.IsRead = true;
+                    Db.SaveChanges();
+                    
+                    TempData["SuccessMessage"] = "Mesajul a fost marcat ca citit.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Mesajul nu a fost găsit.";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error marking message as read: {ex.Message}");
+                TempData["ErrorMessage"] = "A apărut o eroare la marcarea mesajului ca citit.";
             }
             
             return RedirectToAction("Dashboard");
