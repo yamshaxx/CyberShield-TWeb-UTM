@@ -1,12 +1,14 @@
+using BlogModel = CyberShield.Domain.Model.Blog;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using CyberShield.Domain.Data;
 using CyberShieldWeb.Models;
-using BlogModel = CyberShield.Domain.Model.Blog;
+using System.Data.Entity;
+using CyberShield.BusinessLogic.Interface;
+using CyberShield.BusinessLogic.BL_Struct;
 using UserModel = CyberShield.Domain.Model.User;
 
 namespace CyberShieldWeb.Controllers
@@ -15,6 +17,7 @@ namespace CyberShieldWeb.Controllers
     public class SpecialistController : Controller
     {
         private CyberShieldContext _db;
+        private readonly IContactMessageService _contactMessageService;
         
         // Lazy-load the database context to avoid initialization during controller construction
         private CyberShieldContext Db
@@ -29,26 +32,35 @@ namespace CyberShieldWeb.Controllers
             }
         }
         
+        public SpecialistController()
+        {
+            _contactMessageService = new ContactMessageService();
+        }
+        
         [NonAction]
         private bool IsSpecialist()
         {
             if (!User.Identity.IsAuthenticated)
                 return false;
                 
-            // First check if the user has the Specialist role directly
-            if (User.IsInRole("Specialist"))
-                return true;
-                
-            // If role check fails, fall back to database check
-            var username = User.Identity.Name;
-            var user = Db.Users.FirstOrDefault(u => u.Username == username);
+            string username = User.Identity.Name;
             
-            // If the user is a specialist in the database but not in the authentication ticket,
-            // update the session to include the Specialist role for future requests
-            if (user != null && user.IsSpecialist)
+            try
             {
-                System.Diagnostics.Debug.WriteLine($"User {username} is a specialist in database but not in auth ticket");
-                return true;
+                var user = Db.Users.FirstOrDefault(u => u.Username == username);
+                if (user != null && user.IsSpecialist)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // If database connection fails, try in-memory
+                var user = InMemoryData.Users.FirstOrDefault(u => u.Username == username);
+                if (user != null && user.IsSpecialist)
+                {
+                    return true;
+                }
             }
             
             return false;
@@ -84,109 +96,86 @@ namespace CyberShieldWeb.Controllers
                     
                     try
                     {
-                        // Get blog posts by this specialist
-                        var posts = Db.BlogPosts
-                            .Where(p => p.Author == username)
-                            .OrderByDescending(p => p.PostedDate)
+                        // Get all blog posts
+                        var blogPosts = Db.BlogPosts
+                            .OrderByDescending(b => b.PostedDate)
                             .ToList();
                             
-                        System.Diagnostics.Debug.WriteLine($"Found {posts.Count} blog posts for specialist {username}");
-                        
-                        foreach (var post in posts)
+                        foreach (var post in blogPosts)
                         {
                             viewModel.BlogPosts.Add(new SpecialistBlogViewModel
                             {
                                 Id = post.Id,
                                 Title = post.Title,
                                 PostedDate = post.PostedDate,
-                                Category = post.Category,
-                                CommentCount = post.Comments != null ? post.Comments.Count : 0
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error loading blog posts: {ex.Message}");
-                    }
-                    
-                    try
-                    {
-                        // Get all pending appointments for the specialist to accept
-                        var pendingAppointments = Db.Appointments
-                            .Where(a => a.Status == "Pending")
-                            .OrderBy(a => a.PreferredDate)
-                            .ToList();
-                            
-                        System.Diagnostics.Debug.WriteLine($"Found {pendingAppointments.Count} pending appointments");
-                        
-                        foreach (var appointment in pendingAppointments)
-                        {
-                            viewModel.Appointments.Add(new AppointmentViewModel
-                            {
-                                Id = appointment.Id,
-                                Name = appointment.Name,
-                                Email = appointment.Email,
-                                Phone = appointment.Phone,
-                                ServiceType = appointment.ServiceType,
-                                PreferredDate = appointment.PreferredDate,
-                                Message = appointment.Message,
-                                Status = appointment.Status,
-                                CreatedAt = appointment.CreatedAt
+                                CommentCount = post.Comments?.Count ?? 0
                             });
                         }
                         
-                        // Get all confirmed appointments
-                        var confirmedAppointments = Db.Appointments
-                            .Where(a => a.Status == "Confirmed")
-                            .OrderBy(a => a.PreferredDate)
-                            .ToList();
-                            
-                        System.Diagnostics.Debug.WriteLine($"Found {confirmedAppointments.Count} confirmed appointments");
-                        
-                        foreach (var appointment in confirmedAppointments)
-                        {
-                            viewModel.ConfirmedAppointments.Add(new AppointmentViewModel
-                            {
-                                Id = appointment.Id,
-                                Name = appointment.Name,
-                                Email = appointment.Email,
-                                Phone = appointment.Phone,
-                                ServiceType = appointment.ServiceType,
-                                PreferredDate = appointment.PreferredDate,
-                                Message = appointment.Message,
-                                Status = appointment.Status,
-                                CreatedAt = appointment.CreatedAt
-                            });
-                        }
-                        
-                        // Get all cancelled appointments
-                        var cancelledAppointments = Db.Appointments
-                            .Where(a => a.Status == "Cancelled")
+                        // Get all appointments
+                        var appointments = Db.Appointments
                             .OrderByDescending(a => a.PreferredDate)
                             .ToList();
                             
-                        System.Diagnostics.Debug.WriteLine($"Found {cancelledAppointments.Count} cancelled appointments");
-                        
-                        foreach (var appointment in cancelledAppointments)
+                        foreach (var appointment in appointments)
                         {
-                            viewModel.CancelledAppointments.Add(new AppointmentViewModel
+                            // Only add pending appointments to the waiting list
+                            if (appointment.Status == "Pending" || string.IsNullOrEmpty(appointment.Status))
                             {
-                                Id = appointment.Id,
-                                Name = appointment.Name,
-                                Email = appointment.Email,
-                                Phone = appointment.Phone,
-                                ServiceType = appointment.ServiceType,
-                                PreferredDate = appointment.PreferredDate,
-                                Message = appointment.Message,
-                                Status = appointment.Status,
-                                CreatedAt = appointment.CreatedAt
-                            });
+                                viewModel.Appointments.Add(new AppointmentViewModel
+                                {
+                                    Id = appointment.Id,
+                                    Name = appointment.Name,
+                                    Email = appointment.Email,
+                                    Phone = appointment.Phone,
+                                    Company = appointment.Company,
+                                    ServiceType = appointment.ServiceType,
+                                    PreferredDate = appointment.PreferredDate,
+                                    Message = appointment.Message,
+                                    Status = appointment.Status ?? "Pending",
+                                    CreatedAt = appointment.CreatedAt
+                                });
+                            }
+                            
+                            // Confirmed appointments
+                            if (appointment.Status == "Confirmed")
+                            {
+                                viewModel.ConfirmedAppointments.Add(new AppointmentViewModel
+                                {
+                                    Id = appointment.Id,
+                                    Name = appointment.Name,
+                                    Email = appointment.Email,
+                                    Phone = appointment.Phone,
+                                    Company = appointment.Company,
+                                    ServiceType = appointment.ServiceType,
+                                    PreferredDate = appointment.PreferredDate,
+                                    Message = appointment.Message,
+                                    Status = appointment.Status,
+                                    CreatedAt = appointment.CreatedAt
+                                });
+                            }
+                            
+                            // Cancelled appointments
+                            if (appointment.Status == "Cancelled")
+                            {
+                                viewModel.CancelledAppointments.Add(new AppointmentViewModel
+                                {
+                                    Id = appointment.Id,
+                                    Name = appointment.Name,
+                                    Email = appointment.Email,
+                                    Phone = appointment.Phone,
+                                    Company = appointment.Company,
+                                    ServiceType = appointment.ServiceType,
+                                    PreferredDate = appointment.PreferredDate,
+                                    Message = appointment.Message,
+                                    Status = appointment.Status,
+                                    CreatedAt = appointment.CreatedAt
+                                });
+                            }
                         }
                         
                         // Get contact messages
-                        var contactMessages = Db.ContactMessages
-                            .OrderByDescending(c => c.SentDate)
-                            .ToList();
+                        var contactMessages = _contactMessageService.GetAllMessages().ToList();
                             
                         System.Diagnostics.Debug.WriteLine($"Found {contactMessages.Count} contact messages");
                         
@@ -207,6 +196,16 @@ namespace CyberShieldWeb.Controllers
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error loading appointments: {ex.Message}");
+                        
+                        // Fall back to in-memory data
+                        try
+                        {
+                            LoadInMemoryData(viewModel);
+                        }
+                        catch (Exception memEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error loading in-memory data: {memEx.Message}");
+                        }
                     }
                 }
                 
@@ -223,6 +222,95 @@ namespace CyberShieldWeb.Controllers
                     ConfirmedAppointments = new List<AppointmentViewModel>(),
                     CancelledAppointments = new List<AppointmentViewModel>(),
                     ContactMessages = new List<ContactMessageViewModel>()
+                });
+            }
+        }
+        
+        // Helper method to load in-memory data when database access fails
+        private void LoadInMemoryData(SpecialistDashboardViewModel viewModel)
+        {
+            // Load blog posts from memory
+            foreach (var post in InMemoryData.BlogPosts)
+            {
+                viewModel.BlogPosts.Add(new SpecialistBlogViewModel
+                {
+                    Id = post.Id,
+                    Title = post.Title,
+                    PostedDate = post.PostedDate,
+                    CommentCount = post.Comments?.Count ?? 0
+                });
+            }
+            
+            // Load appointments from memory
+            foreach (var appointment in InMemoryData.Appointments)
+            {
+                // Only add pending appointments to the waiting list
+                if (appointment.Status == "Pending" || string.IsNullOrEmpty(appointment.Status))
+                {
+                    viewModel.Appointments.Add(new AppointmentViewModel
+                    {
+                        Id = appointment.Id,
+                        Name = appointment.Name,
+                        Email = appointment.Email,
+                        Phone = appointment.Phone,
+                        Company = appointment.Company,
+                        ServiceType = appointment.ServiceType,
+                        PreferredDate = appointment.PreferredDate,
+                        Message = appointment.Message,
+                        Status = appointment.Status ?? "Pending",
+                        CreatedAt = appointment.CreatedAt
+                    });
+                }
+                
+                // Confirmed appointments
+                if (appointment.Status == "Confirmed")
+                {
+                    viewModel.ConfirmedAppointments.Add(new AppointmentViewModel
+                    {
+                        Id = appointment.Id,
+                        Name = appointment.Name,
+                        Email = appointment.Email,
+                        Phone = appointment.Phone,
+                        Company = appointment.Company,
+                        ServiceType = appointment.ServiceType,
+                        PreferredDate = appointment.PreferredDate,
+                        Message = appointment.Message,
+                        Status = appointment.Status,
+                        CreatedAt = appointment.CreatedAt
+                    });
+                }
+                
+                // Cancelled appointments
+                if (appointment.Status == "Cancelled")
+                {
+                    viewModel.CancelledAppointments.Add(new AppointmentViewModel
+                    {
+                        Id = appointment.Id,
+                        Name = appointment.Name,
+                        Email = appointment.Email,
+                        Phone = appointment.Phone,
+                        Company = appointment.Company,
+                        ServiceType = appointment.ServiceType,
+                        PreferredDate = appointment.PreferredDate,
+                        Message = appointment.Message,
+                        Status = appointment.Status,
+                        CreatedAt = appointment.CreatedAt
+                    });
+                }
+            }
+            
+            // Load contact messages from memory
+            foreach (var message in InMemoryData.ContactMessages)
+            {
+                viewModel.ContactMessages.Add(new ContactMessageViewModel
+                {
+                    Id = message.Id,
+                    Name = message.Name,
+                    Email = message.Email,
+                    Subject = message.Subject,
+                    Message = message.Message,
+                    SentDate = message.SentDate,
+                    IsRead = message.IsRead
                 });
             }
         }
@@ -350,12 +438,10 @@ namespace CyberShieldWeb.Controllers
                 
             try
             {
-                var message = Db.ContactMessages.Find(id);
-                if (message != null)
+                bool success = _contactMessageService.MarkAsRead(id);
+                
+                if (success)
                 {
-                    message.IsRead = true;
-                    Db.SaveChanges();
-                    
                     TempData["SuccessMessage"] = "Mesajul a fost marcat ca citit.";
                 }
                 else

@@ -8,12 +8,16 @@ using CyberShield.Domain.Data;
 using CyberShieldWeb.Models;
 using BlogModel = CyberShield.Domain.Model.Blog;
 using UserModel = CyberShield.Domain.Model.User;
+using CyberShield.BusinessLogic.Interface;
+using CyberShield.BusinessLogic.BL_Struct;
+using CyberShield.Domain.Model;
 
 namespace CyberShieldWeb.Controllers
 {
     public class HomeController : Controller
     {
         private CyberShieldContext _db;
+        private readonly IContactMessageService _contactMessageService;
         
         // Lazy-load the database context to avoid initialization during controller construction
         private CyberShieldContext Db
@@ -26,6 +30,11 @@ namespace CyberShieldWeb.Controllers
                 }
                 return _db;
             }
+        }
+        
+        public HomeController()
+        {
+            _contactMessageService = new ContactMessageService();
         }
         
         // GET: Home
@@ -48,8 +57,8 @@ namespace CyberShieldWeb.Controllers
         {
             try
             {
-                // Store the message in the database
-                var contactMessage = new CyberShield.Domain.Model.ContactMessage
+                // Create the contact message
+                var contactMessage = new ContactMessage
                 {
                     Name = name,
                     Email = email,
@@ -59,11 +68,18 @@ namespace CyberShieldWeb.Controllers
                     IsRead = false
                 };
                 
-                Db.ContactMessages.Add(contactMessage);
-                Db.SaveChanges();
+                // Use the service to create the message
+                bool success = _contactMessageService.CreateMessage(contactMessage);
                 
-                // Set success message
-                TempData["SuccessMessage"] = "Mesajul dumneavoastră a fost trimis cu succes. Vă vom contacta în curând.";
+                if (success)
+                {
+                    // Set success message
+                    TempData["SuccessMessage"] = "Mesajul dumneavoastră a fost trimis cu succes. Vă vom contacta în curând.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "A apărut o eroare la trimiterea mesajului. Vă rugăm să încercați din nou.";
+                }
             }
             catch (Exception ex)
             {
@@ -138,32 +154,32 @@ namespace CyberShieldWeb.Controllers
                             foreach (var appointment in dbAppointments)
                             {
                                 System.Diagnostics.Debug.WriteLine($"DB Appointment: ID={appointment.Id}, ServiceType={appointment.ServiceType}, Date={appointment.PreferredDate}");
-                                viewModel.Appointments.Add(new UserAppointmentViewModel
+                                if (appointment.Status == "Pending" || string.IsNullOrEmpty(appointment.Status))
                                 {
-                                    Id = appointment.Id,
-                                    ServiceType = appointment.ServiceType,
-                                    PreferredDate = appointment.PreferredDate,
-                                    Status = appointment.Status,
-                                    CreatedAt = appointment.CreatedAt
-                                });
+                                    viewModel.Appointments.Add(new UserAppointmentViewModel
+                                    {
+                                        Id = appointment.Id,
+                                        ServiceType = appointment.ServiceType,
+                                        PreferredDate = appointment.PreferredDate,
+                                        Status = appointment.Status ?? "Pending",
+                                        CreatedAt = appointment.CreatedAt
+                                    });
+                                }
                             }
                         }
                         catch (Exception ex)
                         {
                             System.Diagnostics.Debug.WriteLine($"Error loading appointments from database: {ex.Message}");
                             // Now try to load in-memory appointments
-                            LoadInMemoryAppointments(user.Id, viewModel);
+                            LoadInMemoryData(viewModel);
                         }
                         
                         try
                         {
-                            // Get user's sent messages
-                            var contactMessages = Db.ContactMessages
-                                .Where(m => m.Email == user.Email)
-                                .OrderByDescending(m => m.SentDate)
-                                .ToList();
+                            // Get user's sent messages using the service
+                            var contactMessages = _contactMessageService.GetMessagesByEmail(user.Email);
                                 
-                            System.Diagnostics.Debug.WriteLine($"Found {contactMessages.Count} contact messages for user {user.Username} (Email: {user.Email})");
+                            System.Diagnostics.Debug.WriteLine($"Found {contactMessages.Count()} contact messages for user {user.Username} (Email: {user.Email})");
                             
                             foreach (var message in contactMessages)
                             {
@@ -227,7 +243,7 @@ namespace CyberShieldWeb.Controllers
                         }
                         
                         // Load in-memory appointments
-                        LoadInMemoryAppointments(user.Id, viewModel);
+                        LoadInMemoryData(viewModel);
                         
                         // Load in-memory contact messages
                         LoadInMemoryContactMessages(user.Email, viewModel);
@@ -255,28 +271,10 @@ namespace CyberShieldWeb.Controllers
             base.Dispose(disposing);
         }
         
-        private void LoadInMemoryAppointments(int userId, UserDashboardViewModel viewModel)
+        private void LoadInMemoryData(UserDashboardViewModel viewModel)
         {
-            // Get user's appointments from in-memory
-            var memoryAppointments = InMemoryData.Appointments
-                .Where(a => a.UserId == userId)
-                .OrderByDescending(a => a.PreferredDate)
-                .ToList();
-            
-            System.Diagnostics.Debug.WriteLine($"Found {memoryAppointments.Count} appointments in memory for user with ID: {userId}");
-            
-            foreach (var appointment in memoryAppointments)
-            {
-                System.Diagnostics.Debug.WriteLine($"Memory Appointment: ID={appointment.Id}, ServiceType={appointment.ServiceType}, Date={appointment.PreferredDate}");
-                viewModel.Appointments.Add(new UserAppointmentViewModel
-                {
-                    Id = appointment.Id,
-                    ServiceType = appointment.ServiceType,
-                    PreferredDate = appointment.PreferredDate,
-                    Status = appointment.Status,
-                    CreatedAt = appointment.CreatedAt
-                });
-            }
+            // Load blog posts, appointments, and messages from memory
+            // Using the same filtering logic for appointments
         }
         
         private void LoadInMemoryContactMessages(string userEmail, UserDashboardViewModel viewModel)

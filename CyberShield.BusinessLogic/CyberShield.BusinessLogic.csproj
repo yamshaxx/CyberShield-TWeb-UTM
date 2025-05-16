@@ -69,6 +69,7 @@
     <Compile Include="BL Struct\AppointmentService.cs" />
     <Compile Include="BL Struct\AuthBL.cs" />
     <Compile Include="BL Struct\BlogService.cs" />
+    <Compile Include="BL Struct\ContactMessageService.cs" />
     <Compile Include="BL Struct\ErrorHandlingService.cs" />
     <Compile Include="BL Struct\PenetrationTesting\NetworkPentestService.cs" />
     <Compile Include="BL Struct\UserService.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="Interface\IAppointmentService.cs" />
     <Compile Include="Interface\IAuth.cs" />
     <Compile Include="Interface\IBlogService.cs" />
+    <Compile Include="Interface\IContactMessageService.cs" />
     <Compile Include="Interface\IErrorHandlingService.cs" />
     <Compile Include="Interface\INetworkPentestService.cs" />
     <Compile Include="Interface\IUserService.cs" />
