@@ -20,6 +20,11 @@ namespace CyberShield.BusinessLogic
         private readonly IAdminService _adminService;
         private readonly IValidationService _validationService;
         private readonly IErrorHandlingService _errorHandlingService;
+        private readonly IContactMessageService _contactMessageService;
+        private readonly IServiciiService _serviciiService;
+        private readonly IHelpService _helpService;
+        private readonly IDespreService _despreService;
+        private readonly ITestService _testService;
 
         public BusinessLogic()
         {
@@ -30,6 +35,11 @@ namespace CyberShield.BusinessLogic
             _userService = new UserService(_errorHandlingService);
             _appointmentService = new AppointmentService(_errorHandlingService, _validationService);
             _adminService = new AdminService(_errorHandlingService, _authBL);
+            _contactMessageService = new ContactMessageService();
+            _serviciiService = new ServiciiService(_errorHandlingService, _validationService);
+            _helpService = new HelpService(_errorHandlingService);
+            _despreService = new DespreService(_errorHandlingService);
+            _testService = new TestService(_errorHandlingService);
         }
 
         public BusinessLogic(INetworkPentestRepository networkPentestRepository, IClientRepository clientRepository)
@@ -41,6 +51,11 @@ namespace CyberShield.BusinessLogic
             _userService = new UserService(_errorHandlingService);
             _appointmentService = new AppointmentService(_errorHandlingService, _validationService);
             _adminService = new AdminService(_errorHandlingService, _authBL);
+            _contactMessageService = new ContactMessageService();
+            _serviciiService = new ServiciiService(_errorHandlingService, _validationService);
+            _helpService = new HelpService(_errorHandlingService);
+            _despreService = new DespreService(_errorHandlingService);
+            _testService = new TestService(_errorHandlingService);
             _networkPentestService = new NetworkPentestService(clientRepository, networkPentestRepository);
         }
 
@@ -82,6 +97,31 @@ namespace CyberShield.BusinessLogic
         public IErrorHandlingService GetErrorHandlingService()
         {
             return _errorHandlingService;
+        }
+        
+        public IContactMessageService GetContactMessageService()
+        {
+            return _contactMessageService;
+        }
+        
+        public IServiciiService GetServiciiService()
+        {
+            return _serviciiService;
+        }
+        
+        public IHelpService GetHelpService()
+        {
+            return _helpService;
+        }
+        
+        public IDespreService GetDespreService()
+        {
+            return _despreService;
+        }
+        
+        public ITestService GetTestService()
+        {
+            return _testService;
         }
     }
 }

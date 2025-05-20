@@ -1,20 +1,37 @@
-using System;
 using System.Web.Mvc;
+using CyberShield.BusinessLogic.Interface;
+using CyberShield.BusinessLogic;
 
 namespace CyberShieldWeb.Controllers
 {
     public class TestController : Controller
     {
+        private readonly ITestService _testService;
+
+        public TestController()
+        {
+            var bl = new BusinessLogic.BusinessLogic();
+            _testService = bl.GetTestService();
+        }
+
         // GET: /Test
         public ActionResult Index()
         {
-            return Content("Test controller is working. The routing system is functioning.");
+            string username = User.Identity.IsAuthenticated ? User.Identity.Name : null;
+            _testService.LogTestAccess("Index", username);
+            
+            string content = _testService.GetTestContent();
+            return Content(content);
         }
         
         // GET: /Test/Contact
         public ActionResult Contact()
         {
-            return Content("This is a test contact action. If you can see this, routing to /Test/Contact works.");
+            string username = User.Identity.IsAuthenticated ? User.Identity.Name : null;
+            _testService.LogTestAccess("Contact", username);
+            
+            string content = _testService.GetTestContactContent();
+            return Content(content);
         }
     }
 } 
