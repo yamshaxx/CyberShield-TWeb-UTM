@@ -754,6 +754,26 @@ namespace CyberShield.BusinessLogic.BL_Struct
         
         #endregion
         
+        #region Compatibility methods (wrapper methods for different naming conventions)
+        
+        /// <summary>
+        /// Compatibility wrapper for GetCommentsByBlogPost
+        /// </summary>
+        public IEnumerable<BlogModel.Comment> GetCommentsByBlogPostId(int blogPostId)
+        {
+            return GetCommentsByBlogPost(blogPostId);
+        }
+        
+        /// <summary>
+        /// Compatibility wrapper for AddComment
+        /// </summary>
+        public bool CreateComment(BlogModel.Comment comment, out string errorMessage)
+        {
+            return AddComment(comment, out errorMessage);
+        }
+        
+        #endregion
+        
         #region Helper methods
         
         private void LogError(Exception ex, string source)

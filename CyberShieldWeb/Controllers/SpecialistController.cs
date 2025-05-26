@@ -1,40 +1,27 @@
-using BlogModel = CyberShield.Domain.Model.Blog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using CyberShield.Domain.Data;
-using CyberShieldWeb.Models;
-using System.Data.Entity;
 using CyberShield.BusinessLogic.Interface;
-using CyberShield.BusinessLogic.BL_Struct;
-using UserModel = CyberShield.Domain.Model.User;
+using BL = CyberShield.BusinessLogic;
+using CyberShieldWeb.Models;
 
 namespace CyberShieldWeb.Controllers
 {
     [Authorize]
     public class SpecialistController : Controller
     {
-        private CyberShieldContext _db;
         private readonly IContactMessageService _contactMessageService;
-        
-        // Lazy-load the database context to avoid initialization during controller construction
-        private CyberShieldContext Db
-        {
-            get
-            {
-                if (_db == null)
-                {
-                    _db = new CyberShieldContext();
-                }
-                return _db;
-            }
-        }
+        private readonly IDashboardService _dashboardService;
+        private readonly IAuth _authService;
+        private readonly IErrorHandlingService _errorHandler;
         
         public SpecialistController()
         {
-            _contactMessageService = new ContactMessageService();
+            var bl = new BL.BusinessLogic();
+            _contactMessageService = bl.GetContactMessageService();
+            _dashboardService = bl.GetDashboardService();
+            _authService = bl.GetAuthBL();
+            _errorHandler = bl.GetErrorHandlingService();
         }
         
         [NonAction]
@@ -44,26 +31,7 @@ namespace CyberShieldWeb.Controllers
                 return false;
                 
             string username = User.Identity.Name;
-            
-            try
-            {
-                var user = Db.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null && user.IsSpecialist)
-                {
-                    return true;
-                }
-            }
-            catch
-            {
-                // If database connection fails, try in-memory
-                var user = InMemoryData.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null && user.IsSpecialist)
-                {
-                    return true;
-                }
-            }
-            
-            return false;
+            return _dashboardService.IsUserSpecialist(username);
         }
         
         // GET: Specialist
@@ -78,107 +46,61 @@ namespace CyberShieldWeb.Controllers
         // GET: Specialist/Dashboard
         public ActionResult Dashboard()
         {
-            if (!IsSpecialist())
-                return RedirectToAction("Login", "Auth");
-                
             try
             {
+                if (!IsSpecialist())
+                    return RedirectToAction("Login", "Auth");
+                
                 string username = User.Identity.Name;
+                
+                // Get specialist dashboard data from service
+                var dashboardData = _dashboardService.GetSpecialistDashboardData(username);
+                
+                // Convert to view model
                 var viewModel = new SpecialistDashboardViewModel
                 {
                     Username = username
                 };
                 
-                var user = Db.Users.FirstOrDefault(u => u.Username == username);
-                if (user != null)
+                // Use reflection to extract data from anonymous object
+                var dashboardType = dashboardData.GetType();
+                var totalAppointmentsProperty = dashboardType.GetProperty("TotalAppointments");
+                var recentAppointmentsProperty = dashboardType.GetProperty("RecentAppointments");
+                var contactMessagesProperty = dashboardType.GetProperty("ContactMessages");
+                var pendingAppointmentsProperty = dashboardType.GetProperty("PendingAppointments");
+                
+                if (totalAppointmentsProperty != null)
                 {
-                    viewModel.Email = user.Email;
-                    
-                    try
+                    viewModel.TotalAppointments = (int)(totalAppointmentsProperty.GetValue(dashboardData) ?? 0);
+                }
+                
+                // Process recent appointments
+                if (recentAppointmentsProperty != null)
+                {
+                    var recentAppointments = recentAppointmentsProperty.GetValue(dashboardData) as System.Collections.Generic.IEnumerable<CyberShield.Domain.Model.Blog.Appointment>;
+                    if (recentAppointments != null)
                     {
-                        // Get all blog posts
-                        var blogPosts = Db.BlogPosts
-                            .OrderByDescending(b => b.PostedDate)
-                            .ToList();
-                            
-                        foreach (var post in blogPosts)
+                        foreach (var appointment in recentAppointments)
                         {
-                            viewModel.BlogPosts.Add(new SpecialistBlogViewModel
+                            viewModel.RecentAppointments.Add(new AppointmentViewModel
                             {
-                                Id = post.Id,
-                                Title = post.Title,
-                                PostedDate = post.PostedDate,
-                                CommentCount = post.Comments?.Count ?? 0
+                                Id = appointment.Id,
+                                ClientName = appointment.Name,
+                                ServiceType = appointment.ServiceType,
+                                PreferredDate = appointment.PreferredDate,
+                                Status = appointment.Status,
+                                CreatedAt = appointment.CreatedAt
                             });
                         }
-                        
-                        // Get all appointments
-                        var appointments = Db.Appointments
-                            .OrderByDescending(a => a.PreferredDate)
-                            .ToList();
-                            
-                        foreach (var appointment in appointments)
-                        {
-                            // Only add pending appointments to the waiting list
-                            if (appointment.Status == "Pending" || string.IsNullOrEmpty(appointment.Status))
-                            {
-                                viewModel.Appointments.Add(new AppointmentViewModel
-                                {
-                                    Id = appointment.Id,
-                                    Name = appointment.Name,
-                                    Email = appointment.Email,
-                                    Phone = appointment.Phone,
-                                    Company = appointment.Company,
-                                    ServiceType = appointment.ServiceType,
-                                    PreferredDate = appointment.PreferredDate,
-                                    Message = appointment.Message,
-                                    Status = appointment.Status ?? "Pending",
-                                    CreatedAt = appointment.CreatedAt
-                                });
-                            }
-                            
-                            // Confirmed appointments
-                            if (appointment.Status == "Confirmed")
-                            {
-                                viewModel.ConfirmedAppointments.Add(new AppointmentViewModel
-                                {
-                                    Id = appointment.Id,
-                                    Name = appointment.Name,
-                                    Email = appointment.Email,
-                                    Phone = appointment.Phone,
-                                    Company = appointment.Company,
-                                    ServiceType = appointment.ServiceType,
-                                    PreferredDate = appointment.PreferredDate,
-                                    Message = appointment.Message,
-                                    Status = appointment.Status,
-                                    CreatedAt = appointment.CreatedAt
-                                });
-                            }
-                            
-                            // Cancelled appointments
-                            if (appointment.Status == "Cancelled")
-                            {
-                                viewModel.CancelledAppointments.Add(new AppointmentViewModel
-                                {
-                                    Id = appointment.Id,
-                                    Name = appointment.Name,
-                                    Email = appointment.Email,
-                                    Phone = appointment.Phone,
-                                    Company = appointment.Company,
-                                    ServiceType = appointment.ServiceType,
-                                    PreferredDate = appointment.PreferredDate,
-                                    Message = appointment.Message,
-                                    Status = appointment.Status,
-                                    CreatedAt = appointment.CreatedAt
-                                });
-                            }
-                        }
-                        
-                        // Get contact messages
-                        var contactMessages = _contactMessageService.GetAllMessages().ToList();
-                            
-                        System.Diagnostics.Debug.WriteLine($"Found {contactMessages.Count} contact messages");
-                        
+                    }
+                }
+                
+                // Process contact messages
+                if (contactMessagesProperty != null)
+                {
+                    var contactMessages = contactMessagesProperty.GetValue(dashboardData) as System.Collections.Generic.IEnumerable<CyberShield.Domain.Model.ContactMessage>;
+                    if (contactMessages != null)
+                    {
                         foreach (var message in contactMessages)
                         {
                             viewModel.ContactMessages.Add(new ContactMessageViewModel
@@ -193,18 +115,25 @@ namespace CyberShieldWeb.Controllers
                             });
                         }
                     }
-                    catch (Exception ex)
+                }
+                
+                // Process pending appointments
+                if (pendingAppointmentsProperty != null)
+                {
+                    var pendingAppointments = pendingAppointmentsProperty.GetValue(dashboardData) as System.Collections.Generic.IEnumerable<CyberShield.Domain.Model.Blog.Appointment>;
+                    if (pendingAppointments != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error loading appointments: {ex.Message}");
-                        
-                        // Fall back to in-memory data
-                        try
+                        foreach (var appointment in pendingAppointments)
                         {
-                            LoadInMemoryData(viewModel);
-                        }
-                        catch (Exception memEx)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error loading in-memory data: {memEx.Message}");
+                            viewModel.PendingAppointments.Add(new AppointmentViewModel
+                            {
+                                Id = appointment.Id,
+                                ClientName = appointment.Name,
+                                ServiceType = appointment.ServiceType,
+                                PreferredDate = appointment.PreferredDate,
+                                Status = appointment.Status,
+                                CreatedAt = appointment.CreatedAt
+                            });
                         }
                     }
                 }
@@ -213,110 +142,16 @@ namespace CyberShieldWeb.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in Specialist Dashboard: {ex.Message}");
+                _errorHandler?.LogError(ex, "SpecialistController.Dashboard");
                 return View(new SpecialistDashboardViewModel
                 {
-                    Username = User.Identity.Name,
-                    BlogPosts = new List<SpecialistBlogViewModel>(),
-                    Appointments = new List<AppointmentViewModel>(),
-                    ConfirmedAppointments = new List<AppointmentViewModel>(),
-                    CancelledAppointments = new List<AppointmentViewModel>(),
-                    ContactMessages = new List<ContactMessageViewModel>()
+                    Username = User.Identity.Name ?? ""
                 });
             }
         }
         
-        // Helper method to load in-memory data when database access fails
-        private void LoadInMemoryData(SpecialistDashboardViewModel viewModel)
-        {
-            // Load blog posts from memory
-            foreach (var post in InMemoryData.BlogPosts)
-            {
-                viewModel.BlogPosts.Add(new SpecialistBlogViewModel
-                {
-                    Id = post.Id,
-                    Title = post.Title,
-                    PostedDate = post.PostedDate,
-                    CommentCount = post.Comments?.Count ?? 0
-                });
-            }
-            
-            // Load appointments from memory
-            foreach (var appointment in InMemoryData.Appointments)
-            {
-                // Only add pending appointments to the waiting list
-                if (appointment.Status == "Pending" || string.IsNullOrEmpty(appointment.Status))
-                {
-                    viewModel.Appointments.Add(new AppointmentViewModel
-                    {
-                        Id = appointment.Id,
-                        Name = appointment.Name,
-                        Email = appointment.Email,
-                        Phone = appointment.Phone,
-                        Company = appointment.Company,
-                        ServiceType = appointment.ServiceType,
-                        PreferredDate = appointment.PreferredDate,
-                        Message = appointment.Message,
-                        Status = appointment.Status ?? "Pending",
-                        CreatedAt = appointment.CreatedAt
-                    });
-                }
-                
-                // Confirmed appointments
-                if (appointment.Status == "Confirmed")
-                {
-                    viewModel.ConfirmedAppointments.Add(new AppointmentViewModel
-                    {
-                        Id = appointment.Id,
-                        Name = appointment.Name,
-                        Email = appointment.Email,
-                        Phone = appointment.Phone,
-                        Company = appointment.Company,
-                        ServiceType = appointment.ServiceType,
-                        PreferredDate = appointment.PreferredDate,
-                        Message = appointment.Message,
-                        Status = appointment.Status,
-                        CreatedAt = appointment.CreatedAt
-                    });
-                }
-                
-                // Cancelled appointments
-                if (appointment.Status == "Cancelled")
-                {
-                    viewModel.CancelledAppointments.Add(new AppointmentViewModel
-                    {
-                        Id = appointment.Id,
-                        Name = appointment.Name,
-                        Email = appointment.Email,
-                        Phone = appointment.Phone,
-                        Company = appointment.Company,
-                        ServiceType = appointment.ServiceType,
-                        PreferredDate = appointment.PreferredDate,
-                        Message = appointment.Message,
-                        Status = appointment.Status,
-                        CreatedAt = appointment.CreatedAt
-                    });
-                }
-            }
-            
-            // Load contact messages from memory
-            foreach (var message in InMemoryData.ContactMessages)
-            {
-                viewModel.ContactMessages.Add(new ContactMessageViewModel
-                {
-                    Id = message.Id,
-                    Name = message.Name,
-                    Email = message.Email,
-                    Subject = message.Subject,
-                    Message = message.Message,
-                    SentDate = message.SentDate,
-                    IsRead = message.IsRead
-                });
-            }
-        }
-        
-        // GET: Specialist/CreateBlogPost
-        public ActionResult CreateBlogPost()
+        // GET: Specialist/Appointments
+        public ActionResult Appointments()
         {
             if (!IsSpecialist())
                 return RedirectToAction("Login", "Auth");
@@ -324,147 +159,37 @@ namespace CyberShieldWeb.Controllers
             return View();
         }
         
-        // POST: Specialist/CreateBlogPost
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ValidateInput(false)] // Allow HTML in content
-        public ActionResult CreateBlogPost(CreateBlogPostViewModel model)
+        // GET: Specialist/Messages
+        public ActionResult Messages()
         {
-            if (!IsSpecialist())
-                return RedirectToAction("Login", "Auth");
-                
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (!IsSpecialist())
+                    return RedirectToAction("Login", "Auth");
+                
+                var messages = _contactMessageService.GetAllMessages();
+                
+                var viewModel = new ContactMessagesViewModel
                 {
-                    var blogPost = new BlogModel.BlogPost
+                    Messages = messages.Select(m => new ContactMessageViewModel
                     {
-                        Title = model.Title,
-                        Author = User.Identity.Name,
-                        PostedDate = DateTime.Now,
-                        Content = model.Content,
-                        Summary = model.Summary,
-                        Category = model.Category,
-                        ImageUrl = model.ImageUrl
-                    };
-                    
-                    Db.BlogPosts.Add(blogPost);
-                    Db.SaveChanges();
-                    
-                    TempData["SuccessMessage"] = "Articolul a fost creat cu succes!";
-                    return RedirectToAction("Dashboard");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error creating blog post: {ex.Message}");
-                    ModelState.AddModelError("", "A apărut o eroare la crearea articolului. Încercați din nou.");
-                }
-            }
-            
-            return View(model);
-        }
-        
-        // POST: Specialist/AcceptAppointment
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult AcceptAppointment(int id)
-        {
-            if (!IsSpecialist())
-                return RedirectToAction("Login", "Auth");
+                        Id = m.Id,
+                        Name = m.Name,
+                        Email = m.Email,
+                        Subject = m.Subject,
+                        Message = m.Message,
+                        SentDate = m.SentDate,
+                        IsRead = m.IsRead
+                    }).ToList()
+                };
                 
-            try
-            {
-                var appointment = Db.Appointments.Find(id);
-                if (appointment != null)
-                {
-                    appointment.Status = "Confirmed";
-                    Db.SaveChanges();
-                    
-                    TempData["SuccessMessage"] = "Consultația a fost acceptată cu succes!";
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Consultația nu a fost găsită.";
-                }
+                return View(viewModel);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error accepting appointment: {ex.Message}");
-                TempData["ErrorMessage"] = "A apărut o eroare la acceptarea consultației.";
+                _errorHandler?.LogError(ex, "SpecialistController.Messages");
+                return View(new ContactMessagesViewModel());
             }
-            
-            return RedirectToAction("Dashboard");
-        }
-        
-        // POST: Specialist/CancelAppointment
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CancelAppointment(int id)
-        {
-            if (!IsSpecialist())
-                return RedirectToAction("Login", "Auth");
-                
-            try
-            {
-                var appointment = Db.Appointments.Find(id);
-                if (appointment != null)
-                {
-                    appointment.Status = "Cancelled";
-                    Db.SaveChanges();
-                    
-                    TempData["SuccessMessage"] = "Consultația a fost anulată.";
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Consultația nu a fost găsită.";
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error cancelling appointment: {ex.Message}");
-                TempData["ErrorMessage"] = "A apărut o eroare la anularea consultației.";
-            }
-            
-            return RedirectToAction("Dashboard");
-        }
-        
-        // POST: Specialist/MarkContactMessageAsRead
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult MarkContactMessageAsRead(int id)
-        {
-            if (!IsSpecialist())
-                return RedirectToAction("Login", "Auth");
-                
-            try
-            {
-                bool success = _contactMessageService.MarkAsRead(id);
-                
-                if (success)
-                {
-                    TempData["SuccessMessage"] = "Mesajul a fost marcat ca citit.";
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Mesajul nu a fost găsit.";
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error marking message as read: {ex.Message}");
-                TempData["ErrorMessage"] = "A apărut o eroare la marcarea mesajului ca citit.";
-            }
-            
-            return RedirectToAction("Dashboard");
-        }
-        
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && _db != null)
-            {
-                _db.Dispose();
-            }
-            base.Dispose(disposing);
         }
     }
 } 

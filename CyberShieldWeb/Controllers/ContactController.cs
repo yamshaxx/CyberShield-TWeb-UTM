@@ -1,7 +1,7 @@
 using System;
 using System.Web.Mvc;
 using CyberShield.BusinessLogic.Interface;
-using CyberShield.BusinessLogic;
+using BL = CyberShield.BusinessLogic;
 using CyberShield.Domain.Model;
 
 namespace CyberShieldWeb.Controllers
@@ -14,7 +14,7 @@ namespace CyberShieldWeb.Controllers
 
         public ContactController()
         {
-            var bl = new BusinessLogic.BusinessLogic();
+            var bl = new BL.BusinessLogic();
             _contactMessageService = bl.GetContactMessageService();
             _errorHandler = bl.GetErrorHandlingService();
         }

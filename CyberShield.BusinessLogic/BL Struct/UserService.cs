@@ -36,6 +36,24 @@ namespace CyberShield.BusinessLogic.BL_Struct
             }
         }
 
+        public User GetUserByUsername(string username)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    return null;
+                }
+                
+                return _db.Users.FirstOrDefault(u => u.Username == username);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, nameof(GetUserByUsername));
+                return null;
+            }
+        }
+
         public IEnumerable<User> GetAllUsers()
         {
             try

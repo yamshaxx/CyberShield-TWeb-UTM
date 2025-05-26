@@ -80,6 +80,7 @@
     <Compile Include="Model\PenetrationTesting\NetworkPentestRequestDTO.cs" />
     <Compile Include="Model\User\User.cs" />
     <Compile Include="Model\User\UserLoginDTO.cs" />
+    <Compile Include="Model\User\UserRegistrationDTO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -26,8 +26,10 @@ namespace CyberShield.BusinessLogic.Interface
         // Blog comments
         BlogModel.Comment GetCommentById(int id);
         IEnumerable<BlogModel.Comment> GetCommentsByBlogPost(int blogPostId);
+        IEnumerable<BlogModel.Comment> GetCommentsByBlogPostId(int blogPostId);
         IEnumerable<BlogModel.Comment> GetCommentsByUser(int userId);
         bool AddComment(BlogModel.Comment comment, out string errorMessage);
+        bool CreateComment(BlogModel.Comment comment, out string errorMessage);
         bool UpdateComment(BlogModel.Comment comment, out string errorMessage);
         bool DeleteComment(int commentId, out string errorMessage);
         bool ModerateComment(int commentId, bool approved, out string errorMessage);

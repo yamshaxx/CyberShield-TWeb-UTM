@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using CyberShield.BusinessLogic.Interface;
-using CyberShield.BusinessLogic;
+using BL = CyberShield.BusinessLogic;
 using CyberShieldWeb.Models.Blog;
 using BlogModel = CyberShield.Domain.Model.Blog;
 
@@ -17,7 +17,7 @@ namespace CyberShieldWeb.Controllers
 
         public BlogController()
         {
-            var bl = new BusinessLogic.BusinessLogic();
+            var bl = new BL.BusinessLogic();
             _blogService = bl.GetBlogService();
             _userService = bl.GetUserService();
             _errorHandler = bl.GetErrorHandlingService();

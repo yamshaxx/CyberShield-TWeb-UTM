@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Web.Mvc;
 using CyberShield.BusinessLogic.Interface;
-using CyberShield.BusinessLogic;
+using BL = CyberShield.BusinessLogic;
 using CyberShieldWeb.Models.Admin;
 using BlogModel = CyberShield.Domain.Model.Blog;
 using UserModel = CyberShield.Domain.Model.User;
@@ -15,21 +15,45 @@ namespace CyberShieldWeb.Controllers
         private readonly IAdminService _adminService;
         private readonly IBlogService _blogService;
         private readonly IUserService _userService;
+        private readonly IAuth _authService;
         private readonly IErrorHandlingService _errorHandler;
 
         public AdminController()
         {
-            var bl = new BusinessLogic.BusinessLogic();
+            var bl = new BL.BusinessLogic();
             _adminService = bl.GetAdminService();
             _blogService = bl.GetBlogService();
             _userService = bl.GetUserService();
+            _authService = bl.GetAuthBL();
             _errorHandler = bl.GetErrorHandlingService();
         }
 
+        [NonAction]
+        private bool IsAdmin()
+        {
+            if (!User.Identity.IsAuthenticated)
+                return false;
+                
+            string username = User.Identity.Name;
+            return _authService.IsUserAdmin(username);
+        }
+
+        [NonAction]
+        private ActionResult CheckAdminAccess()
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+            return null;
+        }
+
         // GET: Admin
-        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var users = _adminService.GetAllUsers().ToList();
@@ -55,10 +79,43 @@ namespace CyberShieldWeb.Controllers
             }
         }
 
+        // GET: Admin/Dashboard
+        public ActionResult Dashboard()
+        {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
+            try
+            {
+                var users = _adminService.GetAllUsers().ToList();
+                var blogPosts = _adminService.GetAllBlogPosts().ToList();
+                var appointments = _adminService.GetAllAppointments().ToList();
+
+                var adminDashboard = new AdminDashboardViewModel
+                {
+                    UserCount = users.Count,
+                    BlogPostCount = blogPosts.Count,
+                    CommentCount = 0, // Will be calculated from blog posts
+                    LatestUsers = users.OrderByDescending(u => u.Id).Take(5).ToList(),
+                    LatestBlogPosts = blogPosts.OrderByDescending(b => b.PostedDate).Take(5).ToList()
+                };
+
+                return View("Index", adminDashboard);
+            }
+            catch (Exception ex)
+            {
+                _errorHandler?.LogError(ex, "AdminController.Dashboard");
+                TempData["ErrorMessage"] = "A apărut o eroare la încărcarea dashboard-ului.";
+                return View("Index", new AdminDashboardViewModel());
+            }
+        }
+
         // GET: Admin/Users
-        [Authorize(Roles = "Admin")]
         public ActionResult Users()
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var users = _adminService.GetAllUsers().ToList();
@@ -73,9 +130,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/UserDetails/5
-        [Authorize(Roles = "Admin")]
         public ActionResult UserDetails(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var user = _userService.GetUserById(id);
@@ -94,9 +153,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/EditUser/5
-        [Authorize(Roles = "Admin")]
         public ActionResult EditUser(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var user = _userService.GetUserById(id);
@@ -125,9 +186,11 @@ namespace CyberShieldWeb.Controllers
         // POST: Admin/EditUser/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public ActionResult EditUser(EditUserViewModel model)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             if (ModelState.IsValid)
             {
                 try
@@ -163,9 +226,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/DeleteUser/5
-        [Authorize(Roles = "Admin")]
         public ActionResult DeleteUser(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var user = _userService.GetUserById(id);
@@ -186,9 +251,11 @@ namespace CyberShieldWeb.Controllers
         // POST: Admin/DeleteUser/5
         [HttpPost, ActionName("DeleteUser")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public ActionResult DeleteUserConfirmed(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 if (_adminService.DeleteUser(id, out string errorMessage))
@@ -210,9 +277,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/BlogPosts
-        [Authorize(Roles = "Admin")]
         public ActionResult BlogPosts()
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var blogPosts = _adminService.GetAllBlogPosts().OrderByDescending(p => p.PostedDate).ToList();
@@ -227,9 +296,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/EditBlogPost/5
-        [Authorize(Roles = "Admin")]
         public ActionResult EditBlogPost(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var blogPost = _blogService.GetBlogPostById(id);
@@ -262,9 +333,11 @@ namespace CyberShieldWeb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateInput(false)] // Allow HTML content
-        [Authorize(Roles = "Admin")]
         public ActionResult EditBlogPost(EditBlogPostViewModel model)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             if (ModelState.IsValid)
             {
                 try
@@ -303,9 +376,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/CreateBlogPost
-        [Authorize(Roles = "Admin")]
         public ActionResult CreateBlogPost()
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             return View(new CreateBlogPostViewModel());
         }
 
@@ -313,9 +388,11 @@ namespace CyberShieldWeb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateInput(false)] // Allow HTML content
-        [Authorize(Roles = "Admin")]
         public ActionResult CreateBlogPost(CreateBlogPostViewModel model)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             if (ModelState.IsValid)
             {
                 try
@@ -352,9 +429,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/DeleteBlogPost/5
-        [Authorize(Roles = "Admin")]
         public ActionResult DeleteBlogPost(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var blogPost = _blogService.GetBlogPostById(id);
@@ -375,9 +454,11 @@ namespace CyberShieldWeb.Controllers
         // POST: Admin/DeleteBlogPost/5
         [HttpPost, ActionName("DeleteBlogPost")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public ActionResult DeleteBlogPostConfirmed(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 if (_adminService.DeleteBlogPost(id, out string errorMessage))
@@ -399,9 +480,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/Comments
-        [Authorize(Roles = "Admin")]
         public ActionResult Comments()
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var comments = _adminService.GetFlaggedComments().ToList();
@@ -416,9 +499,11 @@ namespace CyberShieldWeb.Controllers
         }
 
         // GET: Admin/DeleteComment/5
-        [Authorize(Roles = "Admin")]
         public ActionResult DeleteComment(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 var comment = _blogService.GetCommentById(id);
@@ -439,9 +524,11 @@ namespace CyberShieldWeb.Controllers
         // POST: Admin/DeleteComment/5
         [HttpPost, ActionName("DeleteComment")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public ActionResult DeleteCommentConfirmed(int id)
         {
+            var adminCheck = CheckAdminAccess();
+            if (adminCheck != null) return adminCheck;
+            
             try
             {
                 if (_blogService.DeleteComment(id, out string errorMessage))

@@ -25,6 +25,7 @@ namespace CyberShield.BusinessLogic
         private readonly IHelpService _helpService;
         private readonly IDespreService _despreService;
         private readonly ITestService _testService;
+        private readonly IDashboardService _dashboardService;
 
         public BusinessLogic()
         {
@@ -40,6 +41,7 @@ namespace CyberShield.BusinessLogic
             _helpService = new HelpService(_errorHandlingService);
             _despreService = new DespreService(_errorHandlingService);
             _testService = new TestService(_errorHandlingService);
+            _dashboardService = new DashboardService(_errorHandlingService);
         }
 
         public BusinessLogic(INetworkPentestRepository networkPentestRepository, IClientRepository clientRepository)
@@ -56,6 +58,7 @@ namespace CyberShield.BusinessLogic
             _helpService = new HelpService(_errorHandlingService);
             _despreService = new DespreService(_errorHandlingService);
             _testService = new TestService(_errorHandlingService);
+            _dashboardService = new DashboardService(_errorHandlingService);
             _networkPentestService = new NetworkPentestService(clientRepository, networkPentestRepository);
         }
 
@@ -122,6 +125,11 @@ namespace CyberShield.BusinessLogic
         public ITestService GetTestService()
         {
             return _testService;
+        }
+
+        public IDashboardService GetDashboardService()
+        {
+            return _dashboardService;
         }
     }
 }

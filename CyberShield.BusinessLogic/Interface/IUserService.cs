@@ -8,6 +8,7 @@ namespace CyberShield.BusinessLogic.Interface
     {
         // User CRUD operations
         User GetUserById(int id);
+        User GetUserByUsername(string username);
         IEnumerable<User> GetAllUsers();
         IEnumerable<User> GetUsersByRole(string role);
         bool CreateUser(User user, out string errorMessage);

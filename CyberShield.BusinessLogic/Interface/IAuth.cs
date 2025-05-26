@@ -15,8 +15,14 @@ namespace CyberShield.BusinessLogic.Interface
         string HashPassword(string password);
         bool ValidatePassword(string password, out string errorMessage);
         
+        // Registration and Login operations
+        bool RegisterUser(UserRegistrationDTO userDto, out string errorMessage);
+        bool LoginUser(UserLoginDTO loginDto, out string errorMessage, out User user);
+        bool CheckUserExists(string username, string email, out bool usernameExists, out bool emailExists);
+        bool CreateAdminUser(out string errorMessage);
+        bool CreateSpecialistUser(out string errorMessage);
+        
         // User management
-        bool RegisterUser(User user, string password, out string errorMessage);
         bool UpdateUser(User user, out string errorMessage);
         bool DeleteUser(int userId, out string errorMessage);
         User GetUserByUsername(string username);

@@ -70,8 +70,13 @@
     <Compile Include="BL Struct\AuthBL.cs" />
     <Compile Include="BL Struct\BlogService.cs" />
     <Compile Include="BL Struct\ContactMessageService.cs" />
+    <Compile Include="BL Struct\DashboardService.cs" />
+    <Compile Include="BL Struct\DespreService.cs" />
     <Compile Include="BL Struct\ErrorHandlingService.cs" />
+    <Compile Include="BL Struct\HelpService.cs" />
     <Compile Include="BL Struct\PenetrationTesting\NetworkPentestService.cs" />
+    <Compile Include="BL Struct\ServiciiService.cs" />
+    <Compile Include="BL Struct\TestService.cs" />
     <Compile Include="BL Struct\UserService.cs" />
     <Compile Include="BL Struct\ValidationService.cs" />
     <Compile Include="BusinessLogic.cs" />
@@ -81,8 +86,13 @@
     <Compile Include="Interface\IAuth.cs" />
     <Compile Include="Interface\IBlogService.cs" />
     <Compile Include="Interface\IContactMessageService.cs" />
+    <Compile Include="Interface\IDashboardService.cs" />
+    <Compile Include="Interface\IDespreService.cs" />
     <Compile Include="Interface\IErrorHandlingService.cs" />
+    <Compile Include="Interface\IHelpService.cs" />
     <Compile Include="Interface\INetworkPentestService.cs" />
+    <Compile Include="Interface\IServiciiService.cs" />
+    <Compile Include="Interface\ITestService.cs" />
     <Compile Include="Interface\IUserService.cs" />
     <Compile Include="Interface\IValidationService.cs" />
     <Compile Include="Interface\Repositories\IClientRepository.cs" />

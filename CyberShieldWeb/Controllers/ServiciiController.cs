@@ -1,7 +1,7 @@
 using System;
 using System.Web.Mvc;
 using CyberShield.BusinessLogic.Interface;
-using CyberShield.BusinessLogic;
+using BL = CyberShield.BusinessLogic;
 
 namespace CyberShieldWeb.Controllers
 {
@@ -12,7 +12,7 @@ namespace CyberShieldWeb.Controllers
 
         public ServiciiController()
         {
-            var bl = new BusinessLogic.BusinessLogic();
+            var bl = new BL.BusinessLogic();
             _serviciiService = bl.GetServiciiService();
             _errorHandler = bl.GetErrorHandlingService();
         }
